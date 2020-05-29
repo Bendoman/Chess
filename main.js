@@ -14,17 +14,18 @@ window.addEventListener('resize', function(event)
     canvas.height = window.innerHeight;    
 });
 
-const Tile = function(xPos,yPos,colour){
+const Tile = function(xPos, yPos, colour, name){
     this.xPos = xPos; 
     this.yPos = yPos;
+    this.name = name;
     this.colour = colour;
 }
 
-const Piece = function(xPos, yPos, sprite)
+const Piece = function(tile, sprite)
 {
-    this.xPos = xPos;
-    this.yPos = yPos;
     this.sprite = sprite;
+    this.xPos = tile.xPos;
+    this.yPos = tile.yPos;
 }
 
 //Push piece images into the sprites array
@@ -35,40 +36,11 @@ for(let i = 0; i < 12; i++)
     sprites.push(img);
 }
 
-
-//Create new piece objects, asigning them coordinates and sprites
-for(let i = 0; i < 8; i++)
-{
-    pieces.push(new Piece((300 + (i*80)), 580, sprites[5]));
-    pieces.push(new Piece((300 + (i*80)), 180, sprites[11]));
-}
-
-pieces.push(new Piece(300, 100, sprites[10]));
-pieces.push(new Piece(860, 100, sprites[10]));
-pieces.push(new Piece(300, 660, sprites[4]));
-pieces.push(new Piece(860, 660, sprites[4]));
-
-pieces.push(new Piece(380, 100, sprites[9]));
-pieces.push(new Piece(780, 100, sprites[9]));
-pieces.push(new Piece(380, 660, sprites[3]));
-pieces.push(new Piece(780, 660, sprites[3]));
-
-pieces.push(new Piece(460, 100, sprites[9]));
-pieces.push(new Piece(700, 100, sprites[8]));
-pieces.push(new Piece(460, 660, sprites[2]));
-pieces.push(new Piece(700, 660, sprites[2]));
-
-pieces.push(new Piece(540, 100, sprites[6]));
-pieces.push(new Piece(540, 660, sprites[0]));
-
-pieces.push(new Piece(620, 100, sprites[7]));
-pieces.push(new Piece(620, 660, sprites[1]));
-//---------------------------------------------------------------
-
-
 //Create the board by filling the tiles array with Tile objects
+let letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+
 let x = 300;
-let y = 100; 
+let y = 660; 
 
 for(let i = 0; i < 8; i++)
 {
@@ -78,34 +50,38 @@ for(let i = 0; i < 8; i++)
         if(i % 2 == 0)
         {
             if(j % 2 == 0)
-                tiles.push(new Tile(x, y, '#F0D8BF'));
+                tiles.push(new Tile(x, y, '#BA5546', letters[j] + parseInt(i + 1)));
             else 
-                tiles.push(new Tile(x, y, '#BA5546'));
+                tiles.push(new Tile(x, y, '#F0D8BF', letters[j] + parseInt(i + 1)));
         }
         else 
         {
             if(j % 2 == 0)
-                tiles.push(new Tile(x, y, '#BA5546'));
+                tiles.push(new Tile(x, y, '#F0D8BF', letters[j] + parseInt(i + 1)));
             else 
-                tiles.push(new Tile(x, y, '#F0D8BF'));   
+                tiles.push(new Tile(x, y, '#BA5546', letters[j] + parseInt(i + 1)));   
         }
         x+=80;
     }
-    y+=80;
+    y-=80;
 }
 //-------------------------------------------------------------
 
-
+pieces.push(new Piece(tiles[6], sprites[5]));
 
 
 function loop()
-{
+{   
+    //Draw each tile in the tiles array
     for(let i = 0; i < tiles.length; i++)
     {
         c.fillStyle = tiles[i].colour;
         c.fillRect(tiles[i].xPos, tiles[i].yPos, 80, 80);
+        c.fillStyle = 'black';
+        c.fillText(tiles[i].name, tiles[i].xPos + 2, tiles[i].yPos + 78, 50);
     }
     
+    //Draw each piece in the pieces array
     for(let i = 0; i < pieces.length; i++)
     {
         c.drawImage(pieces[i].sprite, pieces[i].xPos, pieces[i].yPos, 80, 80);
