@@ -38,7 +38,7 @@ for(let i = 0; i < 12; i++)
 
 //Create the board by filling the tiles array with Tile objects
 let letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-
+'test';
 let x = 300;
 let y = 660; 
 
