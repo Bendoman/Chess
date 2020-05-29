@@ -96,6 +96,8 @@ function piecePosUpdate(piece)
         {
             if(mouseCollision(mouseObj, tiles[i][y]) && mouseObj.mouseDown == false && piece.legalMoves.includes(tiles[i][y]))
             {
+                tiles[i][y].piece.tile = 'none';
+                
                 piece.tile.piece = 'none';
                 piece.tile = tiles[i][y];
                 piece.tile.piece = piece;
@@ -124,8 +126,6 @@ function pawnRules(piece)
         }
     }
 
-    
-
     if(piece.colour === 'white' && tileIndex[0] != 7)
     {
         if(tiles[tileIndex[0] + 1][tileIndex[1]].piece === 'none')
@@ -133,6 +133,7 @@ function pawnRules(piece)
 
         if(tileIndex[1] != 7 && tiles[tileIndex[0] + 1][tileIndex[1] + 1].piece != 'none' && tiles[tileIndex[0] + 1][tileIndex[1] + 1].piece.colour != 'white')
             piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] + 1]);
+
 
         if(tileIndex[1] != 0 && tiles[tileIndex[0] + 1][tileIndex[1] - 1].piece != 'none' && tiles[tileIndex[0] + 1][tileIndex[1] - 1].piece.colour != 'white')
             piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] - 1]);
@@ -149,7 +150,6 @@ function pawnRules(piece)
         if(tileIndex[1] != 0 && tiles[tileIndex[0] - 1][tileIndex[1] - 1].piece != 'none' && tiles[tileIndex[0] - 1][tileIndex[1] - 1].piece.colour != 'black')
             piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1] - 1]);
     }  
-
 }
 
 
@@ -230,25 +230,28 @@ function loop()
         }
     }
     
+    for(let i = 0; i < pieces.length; i++)
+    {
+        if(pieces[i].tile === 'none')
+            pieces.splice(i, 1);
+    }
+
+
     //Draw each piece in the pieces array
     for(let i = 0; i < pieces.length; i++)
     {
         if(mouseObj.pieceHeld == 'none')
             mousePiece(mouseObj, pieces[i]);
         else 
-        {
             pawnRules(pieces[i]);
-        }
-
-
+        
         if(mouseObj.pieceHeld == pieces[i])
             piecePosUpdate(pieces[i]);
-
 
         c.drawImage(pieces[i].sprite, pieces[i].x, pieces[i].y, 80, 80);
     }
 
-
+    
     window.requestAnimationFrame(loop);
 }
 loop();
