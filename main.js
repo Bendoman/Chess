@@ -24,17 +24,22 @@ const Tile = function(x, y, colour, name){
     this.height = 80;
 
     this.name = name;
+    this.piece = 'none';
     this.colour = colour;
 }
 
-const Piece = function(tile, sprite)
+const Piece = function(tile, sprite, type, colour)
 {
     this.width = 80;
     this.height = 80;
 
     this.tile = tile;
+    this.type = type;
+    this.colour = colour; 
     this.sprite = sprite;
     
+    this.legalMoves = [];
+
     this.x = this.tile.x;
     this.y = this.tile.y;
 }
@@ -77,7 +82,6 @@ function mousePiece(mouse, piece)
         mouse.pieceHeld = piece; 
 }
 
-
 function piecePosUpdate(piece)
 {
     piece.x = mouseObj.x - 40;
@@ -90,8 +94,12 @@ function piecePosUpdate(piece)
     {
         for(let y = 0; y < tiles[i].length; y++)
         {
-            if(mouseCollision(mouseObj, tiles[i][y]))
+            if(mouseCollision(mouseObj, tiles[i][y]) && mouseObj.mouseDown == false && piece.legalMoves.includes(tiles[i][y]))
+            {
+                piece.tile.piece = 'none';
                 piece.tile = tiles[i][y];
+                piece.tile.piece = piece;
+            }
         }
     }
 
@@ -102,7 +110,47 @@ function piecePosUpdate(piece)
     }
 }
 
+function pawnRules(piece)
+{
+    piece.legalMoves = [];
+    let tileIndex = [];
 
+    for(let i = 0; i < tiles.length; i++)
+    {
+        for(let y = 0; y < tiles[i].length; y++)
+        {
+            if(tiles[i][y] == piece.tile)
+                tileIndex = [i, y]; 
+        }
+    }
+
+    
+
+    if(piece.colour === 'white' && tileIndex[0] != 7)
+    {
+        if(tiles[tileIndex[0] + 1][tileIndex[1]].piece === 'none')
+            piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1]]);
+
+        if(tileIndex[1] != 7 && tiles[tileIndex[0] + 1][tileIndex[1] + 1].piece != 'none' && tiles[tileIndex[0] + 1][tileIndex[1] + 1].piece.colour != 'white')
+            piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] + 1]);
+
+        if(tileIndex[1] != 0 && tiles[tileIndex[0] + 1][tileIndex[1] - 1].piece != 'none' && tiles[tileIndex[0] + 1][tileIndex[1] - 1].piece.colour != 'white')
+            piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] - 1]);
+    }  
+
+    if(piece.colour === 'black' && tileIndex[0] != 0)
+    {
+        if(tiles[tileIndex[0] - 1][tileIndex[1]].piece === 'none')
+            piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1]]);
+
+        if(tileIndex[1] != 7 && tiles[tileIndex[0] - 1][tileIndex[1] + 1].piece != 'none' && tiles[tileIndex[0] - 1][tileIndex[1] + 1].piece.colour != 'black')
+            piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1] + 1]);
+
+        if(tileIndex[1] != 0 && tiles[tileIndex[0] - 1][tileIndex[1] - 1].piece != 'none' && tiles[tileIndex[0] - 1][tileIndex[1] - 1].piece.colour != 'black')
+            piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1] - 1]);
+    }  
+
+}
 
 
 
@@ -147,8 +195,17 @@ for(let i = 0; i < 8; i++)
 }
 
 
-pieces.push(new Piece(tiles[1][1], sprites[5]));
-pieces.push(new Piece(tiles[4][2], sprites[11]));
+pieces.push(new Piece(tiles[1][7], sprites[5], 'pawn', 'white'));
+pieces.push(new Piece(tiles[1][6], sprites[5], 'pawn', 'white'));
+pieces.push(new Piece(tiles[4][6], sprites[11], 'pawn', 'black'));
+pieces.push(new Piece(tiles[4][7], sprites[11], 'pawn', 'black'));
+
+
+for(let i = 0; i < pieces.length; i++)
+{
+    pieces[i].tile.piece = pieces[i];
+}
+
 
 function loop()
 {   
@@ -178,7 +235,12 @@ function loop()
     {
         if(mouseObj.pieceHeld == 'none')
             mousePiece(mouseObj, pieces[i]);
-        
+        else 
+        {
+            pawnRules(pieces[i]);
+        }
+
+
         if(mouseObj.pieceHeld == pieces[i])
             piecePosUpdate(pieces[i]);
 
