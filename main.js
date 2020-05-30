@@ -82,7 +82,8 @@ function mouseCollision(mouse, rect)
 //Determines if the mouse is selecting a piece
 function mousePiece(mouse, piece)
 {
-    if(mouseCollision(mouse, piece) && mouse.mouseDown && turn === piece.colour)
+    // && turn === piece.colour add this back to the if statement
+    if(mouseCollision(mouse, piece) && mouse.mouseDown)
         mouse.pieceHeld = piece; 
 }
 
@@ -169,6 +170,42 @@ function adjustLegalMovesForPawn(piece)
     }  
 }
 
+function adjustLegalMovesForRook(piece)
+{
+    let tileIndex = [];
+    piece.legalMoves = []; //Resets the legalMoves every time the function is called
+
+    //Finds the index within the tiles array of the tile associated with the piece passed to this function
+    for(let i = 0; i < tiles.length; i++)
+    {
+        for(let y = 0; y < tiles[i].length; y++)
+        {
+            if(tiles[i][y] == piece.tile)
+                tileIndex = [i, y]; 
+        }
+    }
+
+
+    for(let i = 0; i < (8-tileIndex[0]); i++)
+    {
+        piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1]]);
+    }
+    
+    for(let i = 0; i < tileIndex[0]; i++)
+    {
+        piece.legalMoves.push(tiles[tileIndex[0] - (i+1)][tileIndex[1]]);
+    }
+
+    for(let i = 0; i < (8 - tileIndex[1]); i++)
+    {
+        piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] + i]);
+    }
+
+    for(let i = 0; i < tileIndex[1]; i++)
+    {
+        piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] - (i+1)]);
+    }
+}
 
 
 
@@ -216,7 +253,8 @@ for(let i = 0; i < 8; i++)
 pieces.push(new Piece(tiles[1][7], sprites[5], 'pawn', 'white'));
 pieces.push(new Piece(tiles[1][6], sprites[5], 'pawn', 'white'));
 pieces.push(new Piece(tiles[4][6], sprites[11], 'pawn', 'black'));
-pieces.push(new Piece(tiles[4][7], sprites[11], 'pawn', 'black'));
+
+pieces.push(new Piece(tiles[4][3], sprites[11], 'pawn', 'black'));
 pieces.push(new Piece(tiles[1][3], sprites[4], 'rook', 'white'));
 
 //Links the Tile object's interal "piece" variable to the piece assigned to the tile
@@ -270,7 +308,15 @@ function loop()
         if(mouseObj.pieceHeld == 'none')
             mousePiece(mouseObj, pieces[i]);
         else //Create a list of legal moves for the piece currently held by the mouse (only pawns for now)
-            adjustLegalMovesForPawn(pieces[i]);
+        {
+            if(pieces[i].type === 'pawn')
+                adjustLegalMovesForPawn(pieces[i]);
+            else if(pieces[i].type === 'rook')
+                adjustLegalMovesForRook(pieces[i]);
+        }
+
+
+
         //If the mouse is holding the currently indexed piece, update its position 
         if(mouseObj.pieceHeld == pieces[i])
             piecePosUpdate(pieces[i]);
