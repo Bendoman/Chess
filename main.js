@@ -129,11 +129,12 @@ function piecePosUpdate(piece)
     }
 }
 
-function pawnRules(piece)
+function adjustLegalMovesForPawn(piece)
 {
-    piece.legalMoves = [];
     let tileIndex = [];
+    piece.legalMoves = []; //Resets the legalMoves every time the function is called
 
+    //Finds the index within the tiles array of the tile associated with the piece passed to this function
     for(let i = 0; i < tiles.length; i++)
     {
         for(let y = 0; y < tiles[i].length; y++)
@@ -155,8 +156,7 @@ function pawnRules(piece)
         if(tileIndex[1] != 0 && tiles[tileIndex[0] + 1][tileIndex[1] - 1].piece != 'none' && tiles[tileIndex[0] + 1][tileIndex[1] - 1].piece.colour != 'white')
             piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] - 1]);
     }  
-
-    if(piece.colour === 'black' && tileIndex[0] != 0)
+    else if(piece.colour === 'black' && tileIndex[0] != 0)
     {
         if(tiles[tileIndex[0] - 1][tileIndex[1]].piece === 'none')
             piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1]]);
@@ -217,6 +217,7 @@ pieces.push(new Piece(tiles[1][7], sprites[5], 'pawn', 'white'));
 pieces.push(new Piece(tiles[1][6], sprites[5], 'pawn', 'white'));
 pieces.push(new Piece(tiles[4][6], sprites[11], 'pawn', 'black'));
 pieces.push(new Piece(tiles[4][7], sprites[11], 'pawn', 'black'));
+pieces.push(new Piece(tiles[1][3], sprites[4], 'rook', 'white'));
 
 //Links the Tile object's interal "piece" variable to the piece assigned to the tile
 for(let i = 0; i < pieces.length; i++)
@@ -269,8 +270,8 @@ function loop()
         if(mouseObj.pieceHeld == 'none')
             mousePiece(mouseObj, pieces[i]);
         else //Create a list of legal moves for the piece currently held by the mouse (only pawns for now)
-            pawnRules(pieces[i]);
-        //If the mouse is holding the currently indexed piece, update it's position 
+            adjustLegalMovesForPawn(pieces[i]);
+        //If the mouse is holding the currently indexed piece, update its position 
         if(mouseObj.pieceHeld == pieces[i])
             piecePosUpdate(pieces[i]);
 
