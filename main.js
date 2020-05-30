@@ -8,6 +8,8 @@ const pieces = [];
 const sprites = [];
 const tiles = [[],[],[],[],[],[],[],[]];
 
+let turn = 'white';
+
 const Mouse = function()
 {
     this.x = 0;
@@ -78,7 +80,7 @@ function mouseCollision(mouse, rect)
 
 function mousePiece(mouse, piece)
 {
-    if(mouseCollision(mouse, piece) && mouse.mouseDown)
+    if(mouseCollision(mouse, piece) && mouse.mouseDown && turn === piece.colour)
         mouse.pieceHeld = piece; 
 }
 
@@ -101,6 +103,11 @@ function piecePosUpdate(piece)
                 piece.tile.piece = 'none';
                 piece.tile = tiles[i][y];
                 piece.tile.piece = piece;
+
+                if(turn === 'white')
+                    turn = 'black';
+                else
+                    turn = 'white';
             }
         }
     }
@@ -240,6 +247,7 @@ function loop()
     //Draw each piece in the pieces array
     for(let i = 0; i < pieces.length; i++)
     {
+        
         if(mouseObj.pieceHeld == 'none')
             mousePiece(mouseObj, pieces[i]);
         else 
