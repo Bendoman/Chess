@@ -69,6 +69,7 @@ window.addEventListener('mouseup', function(event){
     mouseObj.mouseDown = false;
 });
 
+//Point and rectangle collision detection
 function mouseCollision(mouse, rect)
 {
     if(mouse.x > rect.x && mouse.x < (rect.x + rect.width)
@@ -78,6 +79,7 @@ function mouseCollision(mouse, rect)
         return false; 
 }
 
+//Determines if the mouse is selecting a piece
 function mousePiece(mouse, piece)
 {
     if(mouseCollision(mouse, piece) && mouse.mouseDown && turn === piece.colour)
@@ -96,14 +98,21 @@ function piecePosUpdate(piece)
     {
         for(let y = 0; y < tiles[i].length; y++)
         {
+            //If the mouse has moved over a tile with a piece selected (the function does not get called if there is no piece selected), and lets go
+            //Also checks if it is a legal move for the piece selected
             if(mouseCollision(mouseObj, tiles[i][y]) && mouseObj.mouseDown == false && piece.legalMoves.includes(tiles[i][y]))
             {
+                //If there is already a piece on the tile unasign it's tile so that it is ready for deletion
                 tiles[i][y].piece.tile = 'none';
                 
+                //Remove the piece from being associated with the previous tile
                 piece.tile.piece = 'none';
+
+                //Associates the tile and piece together in their internal variables
                 piece.tile = tiles[i][y];
                 piece.tile.piece = piece;
 
+                //Toggle turns after each move
                 if(turn === 'white')
                     turn = 'black';
                 else
@@ -112,6 +121,7 @@ function piecePosUpdate(piece)
         }
     }
 
+    //When the mouse lets go of a piece, it returns to the coordinates of the tile associated with the piece
     if(mouseObj.pieceHeld != piece)
     {
         piece.x = piece.tile.x;
@@ -202,12 +212,13 @@ for(let i = 0; i < 8; i++)
 }
 
 
+//Add all the starting pieces
 pieces.push(new Piece(tiles[1][7], sprites[5], 'pawn', 'white'));
 pieces.push(new Piece(tiles[1][6], sprites[5], 'pawn', 'white'));
 pieces.push(new Piece(tiles[4][6], sprites[11], 'pawn', 'black'));
 pieces.push(new Piece(tiles[4][7], sprites[11], 'pawn', 'black'));
 
-
+//Links the Tile object's interal "piece" variable to the piece assigned to the tile
 for(let i = 0; i < pieces.length; i++)
 {
     pieces[i].tile.piece = pieces[i];
@@ -217,7 +228,11 @@ for(let i = 0; i < pieces.length; i++)
 function loop()
 {   
     c.clearRect(0, 0, canvas.width, canvas.height);
-    
+
+    c.font = '20px Arial';
+    c.fillStyle = 'red';
+    c.fillText(turn + "'s" + ' turn', 300, 50, 150);
+
     //Draw each tile in the tiles array
     for(let i = 0; i < 8; i++)
     {
@@ -233,10 +248,12 @@ function loop()
 
             //print the tiles name
             c.fillStyle = 'black';
+            c.font = '10px Arial';
             c.fillText(tiles[i][y].name, tiles[i][y].x + 2, tiles[i][y].y + 78, 50);
         }
     }
     
+    //Remove any pieces that are not assigned to tiles 
     for(let i = 0; i < pieces.length; i++)
     {
         if(pieces[i].tile === 'none')
