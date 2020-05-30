@@ -229,6 +229,7 @@ function loop()
 {   
     c.clearRect(0, 0, canvas.width, canvas.height);
 
+    //Print an indicator of whose turn it is
     c.font = '20px Arial';
     c.fillStyle = 'red';
     c.fillText(turn + "'s" + ' turn', 300, 50, 150);
@@ -246,7 +247,7 @@ function loop()
             
             c.fillRect(tiles[i][y].x, tiles[i][y].y, tiles[i][y].width, tiles[i][y].height);
 
-            //print the tiles name
+            //print the tile's name
             c.fillStyle = 'black';
             c.font = '10px Arial';
             c.fillText(tiles[i][y].name, tiles[i][y].x + 2, tiles[i][y].y + 78, 50);
@@ -264,12 +265,12 @@ function loop()
     //Draw each piece in the pieces array
     for(let i = 0; i < pieces.length; i++)
     {
-        
+        //If the mouse is not currently holding a piece, check whether the currently indexed piece can be held by it
         if(mouseObj.pieceHeld == 'none')
             mousePiece(mouseObj, pieces[i]);
-        else 
+        else //Create a list of legal moves for the piece currently held by the mouse (only pawns for now)
             pawnRules(pieces[i]);
-        
+        //If the mouse is holding the currently indexed piece, update it's position 
         if(mouseObj.pieceHeld == pieces[i])
             piecePosUpdate(pieces[i]);
 
