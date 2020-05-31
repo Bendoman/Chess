@@ -145,6 +145,7 @@ function adjustLegalMovesForPawn(piece)
         }
     }
 
+    //Think about changing this to a more general solution for colours ala rook rules
     if(piece.colour === 'white' && tileIndex[0] != 7)
     {
         if(tiles[tileIndex[0] + 1][tileIndex[1]].piece === 'none')
@@ -185,26 +186,41 @@ function adjustLegalMovesForRook(piece)
         }
     }
 
-
-    for(let i = 0; i < (8-tileIndex[0]); i++)
-    {
-        piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1]]);
-    }
+    for(let i = 1; i < (8-tileIndex[0]); i++)
+    {   
+        if(tiles[tileIndex[0] + i][tileIndex[1]].piece.colour != piece.colour)
+            piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1]]);
+        
+        if(tiles[tileIndex[0] + i][tileIndex[1]].piece != 'none')
+            break;
+    }   
     
     for(let i = 0; i < tileIndex[0]; i++)
     {
-        piece.legalMoves.push(tiles[tileIndex[0] - (i+1)][tileIndex[1]]);
+        if(tiles[tileIndex[0] - (i+1)][tileIndex[1]].piece.colour != piece.colour)
+            piece.legalMoves.push(tiles[tileIndex[0] - (i+1)][tileIndex[1]]);
+
+        if(tiles[tileIndex[0] - (i+1)][tileIndex[1]].piece != 'none')
+            break;   
     }
 
-    for(let i = 0; i < (8 - tileIndex[1]); i++)
-    {
-        piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] + i]);
+    for(let i = 1; i < (8 - tileIndex[1]); i++)
+    {   
+        if(tiles[tileIndex[0]][tileIndex[1] + i].piece.colour != piece.colour)
+            piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] + i]);
+        
+        if(tiles[tileIndex[0]][tileIndex[1] + i].piece != 'none')
+            break;
     }
 
     for(let i = 0; i < tileIndex[1]; i++)
     {
-        piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] - (i+1)]);
-    }
+        if(tiles[tileIndex[0]][tileIndex[1] - (i+1)].piece.colour != piece.colour)
+            piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] - (i+1)]);
+
+        if(tiles[tileIndex[0]][tileIndex[1] - (i+1)].piece != 'none')
+            break;
+    }        
 }
 
 
@@ -263,6 +279,7 @@ for(let i = 0; i < pieces.length; i++)
     pieces[i].tile.piece = pieces[i];
 }
 
+console.log(pieces);
 
 function loop()
 {   
