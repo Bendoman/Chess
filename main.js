@@ -171,7 +171,7 @@ function adjustLegalMovesForPawn(piece)
     }  
 }
 
-function adjustLegalMovesForRook(piece)
+function horizontalMomvement(piece, distance)
 {
     let tileIndex = [];
     piece.legalMoves = []; //Resets the legalMoves every time the function is called
@@ -186,44 +186,57 @@ function adjustLegalMovesForRook(piece)
         }
     }
 
-    for(let i = 1; i < (8-tileIndex[0]); i++)
-    {   
-        if(tiles[tileIndex[0] + i][tileIndex[1]].piece.colour != piece.colour)
-            piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1]]);
-        
-        if(tiles[tileIndex[0] + i][tileIndex[1]].piece != 'none')
-            break;
-    }   
-    
-    for(let i = 0; i < tileIndex[0]; i++)
+    for(let i = 1; i < distance + 1; i++)
     {
-        if(tiles[tileIndex[0] - (i+1)][tileIndex[1]].piece.colour != piece.colour)
-            piece.legalMoves.push(tiles[tileIndex[0] - (i+1)][tileIndex[1]]);
-
-        if(tiles[tileIndex[0] - (i+1)][tileIndex[1]].piece != 'none')
-            break;   
+        try{
+            if(tiles[tileIndex[0] + i][tileIndex[1]].piece.colour != piece.colour)
+                piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1]]);
+            if(tiles[tileIndex[0] + i][tileIndex[1]].piece != 'none')
+                break;
+        }catch(e){
+            break;
+        }
     }
 
-    for(let i = 1; i < (8 - tileIndex[1]); i++)
-    {   
-        if(tiles[tileIndex[0]][tileIndex[1] + i].piece.colour != piece.colour)
-            piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] + i]);
-        
-        if(tiles[tileIndex[0]][tileIndex[1] + i].piece != 'none')
+    for(let i = 1; i < distance + 1; i++)
+    {
+        try{
+            if(tiles[tileIndex[0] - i][tileIndex[1]].piece.colour != piece.colour)
+                piece.legalMoves.push(tiles[tileIndex[0] - i][tileIndex[1]]);
+            if(tiles[tileIndex[0] - i][tileIndex[1]].piece != 'none')
+                break;
+        }catch(e){
             break;
+        }
     }
 
-    for(let i = 0; i < tileIndex[1]; i++)
+    for(let i = 1; i < distance + 1; i++)
     {
-        if(tiles[tileIndex[0]][tileIndex[1] - (i+1)].piece.colour != piece.colour)
-            piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] - (i+1)]);
-
-        if(tiles[tileIndex[0]][tileIndex[1] - (i+1)].piece != 'none')
+        try{
+            if(tiles[tileIndex[0]][tileIndex[1] + i].piece.colour != piece.colour)
+                piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] + i]);
+            if(tiles[tileIndex[0]][tileIndex[1] + i].piece != 'none')
+                break;
+        }catch(e){
             break;
-    }        
+        }
+    }
+
+    for(let i = 1; i < distance + 1; i++)
+    {
+        try{
+            if(tiles[tileIndex[0]][tileIndex[1] - i].piece.colour != piece.colour)
+                piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] - i]);
+            if(tiles[tileIndex[0]][tileIndex[1] - i].piece != 'none')
+                break;
+        }catch(e){
+            break;
+        }
+    }
+
 }
 
-function adjustLegalMovesForBishop(piece)
+function diagonalMovement(piece, distance)
 {
     let tileIndex = [];
     piece.legalMoves = []; //Resets the legalMoves every time the function is called
@@ -238,75 +251,55 @@ function adjustLegalMovesForBishop(piece)
         }
     }
 
-    for(let i = 1; i < 8; i++)
-    {   
-        try
-        {
+    for(let i = 1; i < distance + 1; i++)
+    {
+        try{
             if(tiles[tileIndex[0] + i][tileIndex[1] + i].piece.colour != piece.colour)
                 piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1] + i]);
             
             if(tiles[tileIndex[0] + i][tileIndex[1] + i].piece != 'none')
                 break;
-        }  
-        catch (e)
-        {
-            if(e instanceof TypeError)
-                break;
+        }catch (e){
+            break;
         }
-    }   
-
-    for(let i = 1; i < 8; i++)
-    {   
-        try
-        {   
+    }
+    for(let i = 1; i < distance + 1; i++)
+    {
+        try{
             if(tiles[tileIndex[0] + i][tileIndex[1] - i].piece.colour != piece.colour)
                 piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1] - i]);
             
             if(tiles[tileIndex[0] + i][tileIndex[1] - i].piece != 'none')
                 break;
+        }catch (e){
+            break;
         }
-        catch(e)
-        {
-            if(e instanceof TypeError)
-                break;
-        }
-    }   
-
-    for(let i = 1; i < 8; i++)
-    {   
-        try
-        {
+    }
+    for(let i = 1; i < distance + 1; i++)
+    {
+        try{
             if(tiles[tileIndex[0] - i][tileIndex[1] - i].piece.colour != piece.colour)
                 piece.legalMoves.push(tiles[tileIndex[0] - i][tileIndex[1] - i]);
             
             if(tiles[tileIndex[0] - i][tileIndex[1] - i].piece != 'none')
                 break;
-        }  
-        catch (e)
-        {
-            if(e instanceof TypeError)
-                break;
+        }catch (e){
+            break;
         }
-    }   
-
-    for(let i = 1; i < 8; i++)
-    {   
-        try
-        {   
+    }
+    for(let i = 1; i < distance + 1; i++)
+    {
+        try{
             if(tiles[tileIndex[0] - i][tileIndex[1] + i].piece.colour != piece.colour)
                 piece.legalMoves.push(tiles[tileIndex[0] - i][tileIndex[1] + i]);
             
             if(tiles[tileIndex[0] - i][tileIndex[1] + i].piece != 'none')
                 break;
+        }catch (e){
+            break;
         }
-        catch(e)
-        {
-            if(e instanceof TypeError)
-                break;
-        }
-    }   
+    }
 }
-
 
 
 //Push piece images into the sprites array
@@ -414,9 +407,9 @@ function loop()
             if(pieces[i].type === 'pawn')
                 adjustLegalMovesForPawn(pieces[i]);
             else if(pieces[i].type === 'rook')
-                adjustLegalMovesForRook(pieces[i]);
+                horizontalMomvement(pieces[i], 8);
             else if(pieces[i].type === 'bishop')
-                adjustLegalMovesForBishop(pieces[i]);
+                diagonalMovement(pieces[i], 8);
         }
 
 
