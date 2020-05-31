@@ -44,6 +44,8 @@ const Piece = function(tile, sprite, type, colour)
 
     this.x = this.tile.x;
     this.y = this.tile.y;
+
+    this.hasMoved = false;
 }
 
 let mouseObj = new Mouse();
@@ -82,8 +84,7 @@ function mouseCollision(mouse, rect)
 //Determines if the mouse is selecting a piece
 function mousePiece(mouse, piece)
 {
-    // && turn === piece.colour add this back to the if statement
-    if(mouseCollision(mouse, piece) && mouse.mouseDown)
+    if(mouseCollision(mouse, piece) && mouse.mouseDown && turn === piece.colour)
         mouse.pieceHeld = piece; 
 }
 
@@ -112,6 +113,9 @@ function piecePosUpdate(piece)
                 //Associates the tile and piece together in their internal variables
                 piece.tile = tiles[i][y];
                 piece.tile.piece = piece;
+
+                if(piece.hasMoved == false)
+                    piece.hasMoved = true;
 
                 //Toggle turns after each move
                 if(turn === 'white')
@@ -148,6 +152,9 @@ function adjustLegalMovesForPawn(piece)
     //Think about changing this to a more general solution for colours ala rook rules
     if(piece.colour === 'white' && tileIndex[0] != 7)
     {
+        if(piece.hasMoved == false)
+            piece.legalMoves.push(tiles[tileIndex[0] + 2][tileIndex[1]]);
+
         if(tiles[tileIndex[0] + 1][tileIndex[1]].piece === 'none')
             piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1]]);
 
@@ -160,6 +167,9 @@ function adjustLegalMovesForPawn(piece)
     }  
     else if(piece.colour === 'black' && tileIndex[0] != 0)
     {
+        if(piece.hasMoved == false)
+            piece.legalMoves.push(tiles[tileIndex[0] - 2][tileIndex[1]]);
+
         if(tiles[tileIndex[0] - 1][tileIndex[1]].piece === 'none')
             piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1]]);
 
@@ -405,19 +415,37 @@ for(let i = 0; i < 8; i++)
 
 
 //Add all the starting pieces
-pieces.push(new Piece(tiles[1][7], sprites[5], 'pawn', 'white'));
-pieces.push(new Piece(tiles[1][6], sprites[5], 'pawn', 'white'));
-pieces.push(new Piece(tiles[4][6], sprites[11], 'pawn', 'black'));
+for(let i = 0; i < 8; i++)
+{
+    pieces.push(new Piece(tiles[1][i], sprites[5], 'pawn', 'white'));
 
-pieces.push(new Piece(tiles[4][3], sprites[11], 'pawn', 'black'));
-pieces.push(new Piece(tiles[1][3], sprites[4], 'rook', 'white'));
+    pieces.push(new Piece(tiles[6][i], sprites[11], 'pawn', 'black'));
+}
 
-pieces.push(new Piece(tiles[2][5], sprites[2], 'bishop', 'white'));
-pieces.push(new Piece(tiles[0][5], sprites[3], 'knight', 'white'));
+pieces.push(new Piece(tiles[0][0], sprites[4], 'rook', 'white'));
+pieces.push(new Piece(tiles[0][7], sprites[4], 'rook', 'white'));
 
-pieces.push(new Piece(tiles[0][0], sprites[7], 'queen', 'black'));
+pieces.push(new Piece(tiles[7][0], sprites[10], 'rook', 'black'));
+pieces.push(new Piece(tiles[7][7], sprites[10], 'rook', 'black'));
 
-pieces.push(new Piece(tiles[4][0], sprites[6], 'king', 'black'));
+pieces.push(new Piece(tiles[0][1], sprites[3], 'knight', 'white'));
+pieces.push(new Piece(tiles[0][6], sprites[3], 'knight', 'white'));
+
+pieces.push(new Piece(tiles[7][1], sprites[9], 'knight', 'black'));
+pieces.push(new Piece(tiles[7][6], sprites[9], 'knight', 'black'));
+
+pieces.push(new Piece(tiles[0][2], sprites[2], 'bishop', 'white'));
+pieces.push(new Piece(tiles[0][5], sprites[2], 'bishop', 'white'));
+
+pieces.push(new Piece(tiles[7][2], sprites[8], 'bishop', 'black'));
+pieces.push(new Piece(tiles[7][5], sprites[8], 'bishop', 'black'));
+
+pieces.push(new Piece(tiles[0][3], sprites[1], 'queen', 'white'));
+pieces.push(new Piece(tiles[7][3], sprites[7], 'queen', 'black'));
+
+pieces.push(new Piece(tiles[0][4], sprites[0], 'king', 'white'));
+pieces.push(new Piece(tiles[7][4], sprites[6], 'king', 'black'));
+
 
 //Links the Tile object's interal "piece" variable to the piece assigned to the tile
 for(let i = 0; i < pieces.length; i++)
