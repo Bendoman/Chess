@@ -223,6 +223,89 @@ function adjustLegalMovesForRook(piece)
     }        
 }
 
+function adjustLegalMovesForBishop(piece)
+{
+    let tileIndex = [];
+    piece.legalMoves = []; //Resets the legalMoves every time the function is called
+
+    //Finds the index within the tiles array of the tile associated with the piece passed to this function
+    for(let i = 0; i < tiles.length; i++)
+    {
+        for(let y = 0; y < tiles[i].length; y++)
+        {
+            if(tiles[i][y] == piece.tile)
+                tileIndex = [i, y]; 
+        }
+    }
+
+    for(let i = 1; i < 8; i++)
+    {   
+        try
+        {
+            if(tiles[tileIndex[0] + i][tileIndex[1] + i].piece.colour != piece.colour)
+                piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1] + i]);
+            
+            if(tiles[tileIndex[0] + i][tileIndex[1] + i].piece != 'none')
+                break;
+        }  
+        catch (e)
+        {
+            if(e instanceof TypeError)
+                break;
+        }
+    }   
+
+    for(let i = 1; i < 8; i++)
+    {   
+        try
+        {   
+            if(tiles[tileIndex[0] + i][tileIndex[1] - i].piece.colour != piece.colour)
+                piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1] - i]);
+            
+            if(tiles[tileIndex[0] + i][tileIndex[1] - i].piece != 'none')
+                break;
+        }
+        catch(e)
+        {
+            if(e instanceof TypeError)
+                break;
+        }
+    }   
+
+    for(let i = 1; i < 8; i++)
+    {   
+        try
+        {
+            if(tiles[tileIndex[0] - i][tileIndex[1] - i].piece.colour != piece.colour)
+                piece.legalMoves.push(tiles[tileIndex[0] - i][tileIndex[1] - i]);
+            
+            if(tiles[tileIndex[0] - i][tileIndex[1] - i].piece != 'none')
+                break;
+        }  
+        catch (e)
+        {
+            if(e instanceof TypeError)
+                break;
+        }
+    }   
+
+    for(let i = 1; i < 8; i++)
+    {   
+        try
+        {   
+            if(tiles[tileIndex[0] - i][tileIndex[1] + i].piece.colour != piece.colour)
+                piece.legalMoves.push(tiles[tileIndex[0] - i][tileIndex[1] + i]);
+            
+            if(tiles[tileIndex[0] - i][tileIndex[1] + i].piece != 'none')
+                break;
+        }
+        catch(e)
+        {
+            if(e instanceof TypeError)
+                break;
+        }
+    }   
+}
 
 
 
@@ -272,6 +355,8 @@ pieces.push(new Piece(tiles[4][6], sprites[11], 'pawn', 'black'));
 
 pieces.push(new Piece(tiles[4][3], sprites[11], 'pawn', 'black'));
 pieces.push(new Piece(tiles[1][3], sprites[4], 'rook', 'white'));
+
+pieces.push(new Piece(tiles[2][5], sprites[2], 'bishop', 'white'));
 
 //Links the Tile object's interal "piece" variable to the piece assigned to the tile
 for(let i = 0; i < pieces.length; i++)
@@ -330,6 +415,8 @@ function loop()
                 adjustLegalMovesForPawn(pieces[i]);
             else if(pieces[i].type === 'rook')
                 adjustLegalMovesForRook(pieces[i]);
+            else if(pieces[i].type === 'bishop')
+                adjustLegalMovesForBishop(pieces[i]);
         }
 
 
