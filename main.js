@@ -174,7 +174,6 @@ function adjustLegalMovesForPawn(piece)
 function horizontalMomvement(piece, distance)
 {
     let tileIndex = [];
-    piece.legalMoves = []; //Resets the legalMoves every time the function is called
 
     //Finds the index within the tiles array of the tile associated with the piece passed to this function
     for(let i = 0; i < tiles.length; i++)
@@ -239,7 +238,7 @@ function horizontalMomvement(piece, distance)
 function diagonalMovement(piece, distance)
 {
     let tileIndex = [];
-    piece.legalMoves = []; //Resets the legalMoves every time the function is called
+
 
     //Finds the index within the tiles array of the tile associated with the piece passed to this function
     for(let i = 0; i < tiles.length; i++)
@@ -301,6 +300,22 @@ function diagonalMovement(piece, distance)
     }
 }
 
+function knightMovement(piece)
+{
+    let tileIndex = [];
+
+    //Finds the index within the tiles array of the tile associated with the piece passed to this function
+    for(let i = 0; i < tiles.length; i++)
+    {
+        for(let y = 0; y < tiles[i].length; y++)
+        {
+            if(tiles[i][y] == piece.tile)
+                tileIndex = [i, y]; 
+        }
+    }
+    
+}
+
 
 //Push piece images into the sprites array
 for(let i = 0; i < 12; i++)
@@ -350,6 +365,11 @@ pieces.push(new Piece(tiles[4][3], sprites[11], 'pawn', 'black'));
 pieces.push(new Piece(tiles[1][3], sprites[4], 'rook', 'white'));
 
 pieces.push(new Piece(tiles[2][5], sprites[2], 'bishop', 'white'));
+pieces.push(new Piece(tiles[0][5], sprites[3], 'knight', 'white'));
+
+pieces.push(new Piece(tiles[0][0], sprites[7], 'queen', 'black'));
+
+pieces.push(new Piece(tiles[4][0], sprites[6], 'king', 'black'));
 
 //Links the Tile object's interal "piece" variable to the piece assigned to the tile
 for(let i = 0; i < pieces.length; i++)
@@ -395,7 +415,6 @@ function loop()
             pieces.splice(i, 1);
     }
 
-
     //Draw each piece in the pieces array
     for(let i = 0; i < pieces.length; i++)
     {
@@ -404,12 +423,26 @@ function loop()
             mousePiece(mouseObj, pieces[i]);
         else //Create a list of legal moves for the piece currently held by the mouse (only pawns for now)
         {
+            pieces[i].legalMoves = [];
+
             if(pieces[i].type === 'pawn')
                 adjustLegalMovesForPawn(pieces[i]);
             else if(pieces[i].type === 'rook')
                 horizontalMomvement(pieces[i], 8);
             else if(pieces[i].type === 'bishop')
                 diagonalMovement(pieces[i], 8);
+            else if(pieces[i].type === 'knight')
+                knightMovement(pieces[i]);    
+            else if(pieces[i].type === 'queen')
+            {
+                horizontalMomvement(pieces[i], 8);
+                diagonalMovement(pieces[i], 8);
+            }
+            else if(pieces[i].type === 'king')
+            {
+                horizontalMomvement(pieces[i], 1);
+                diagonalMovement(pieces[i], 1);
+            }
         }
 
 
