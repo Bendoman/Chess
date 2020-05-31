@@ -314,6 +314,54 @@ function knightMovement(piece)
         }
     }
     
+
+    try{
+        if(tiles[tileIndex[0] + 2][tileIndex[1] + 1].piece.colour != piece.colour)
+            piece.legalMoves.push(tiles[tileIndex[0] + 2][tileIndex[1] + 1]);
+    }catch (e){
+    }
+
+    try{
+        if(tiles[tileIndex[0] + 2][tileIndex[1] - 1].piece.colour != piece.colour)
+        piece.legalMoves.push(tiles[tileIndex[0] + 2][tileIndex[1] - 1]);
+    }catch(e){
+    }
+
+    try{
+        if(tiles[tileIndex[0] + 1][tileIndex[1] + 2].piece.colour != piece.colour)
+            piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] + 2]);
+    }catch (e){
+    }
+
+    try{
+        if(tiles[tileIndex[0] + 1][tileIndex[1] - 2].piece.colour != piece.colour)
+        piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] - 2]);
+    }catch(e){
+    }
+
+    try{
+        if(tiles[tileIndex[0] - 2][tileIndex[1] - 1].piece.colour != piece.colour)
+            piece.legalMoves.push(tiles[tileIndex[0] - 2][tileIndex[1] - 1]);
+    }catch (e){
+    }
+
+    try{
+        if(tiles[tileIndex[0] - 2][tileIndex[1] + 1].piece.colour != piece.colour)
+        piece.legalMoves.push(tiles[tileIndex[0] - 2][tileIndex[1] + 1]);
+    }catch(e){
+    }
+
+    try{
+        if(tiles[tileIndex[0] - 1][tileIndex[1] - 2].piece.colour != piece.colour)
+            piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1] - 2]);
+    }catch (e){
+    }
+
+    try{
+        if(tiles[tileIndex[0] - 1][tileIndex[1] + 2].piece.colour != piece.colour)
+        piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1] + 2]);
+    }catch(e){
+    }
 }
 
 
@@ -405,6 +453,18 @@ function loop()
             c.fillStyle = 'black';
             c.font = '10px Arial';
             c.fillText(tiles[i][y].name, tiles[i][y].x + 2, tiles[i][y].y + 78, 50);
+
+            //Draws a circle on each tile that a held piece can move to
+            if(mouseObj.pieceHeld != 'none' && mouseObj.pieceHeld.legalMoves.includes(tiles[i][y]))
+            {
+                c.beginPath();
+                c.strokeStyle = 'rgba(0, 100, 100, 0.4)';
+                c.arc(tiles[i][y].x + 40, tiles[i][y].y + 40, 10, 0, 2 * Math.PI);
+                c.stroke();
+
+                c.fillStyle = 'rgba(0, 100, 100, 0.4)';
+                c.fill();
+            }
         }
     }
     
