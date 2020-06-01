@@ -9,6 +9,8 @@ const sprites = [];
 const tiles = [[],[],[],[],[],[],[],[]];
 
 let turn = 'white';
+let piecesScanningKings = [];
+
 
 const Mouse = function()
 {
@@ -41,11 +43,19 @@ const Piece = function(tile, sprite, type, colour)
     this.sprite = sprite;
     
     this.legalMoves = [];
+    this.diagonalRay = [[],[],[],[]];
+    this.horizontalRay = [[],[],[],[]];
 
+    this.inCheck = false; 
+    this.blocksCheck = false; 
+    
     this.x = this.tile.x;
     this.y = this.tile.y;
 
+    this.blocked = false; 
     this.hasMoved = false;
+
+    this.king; 
 }
 
 let mouseObj = new Mouse();
@@ -84,7 +94,10 @@ function mouseCollision(mouse, rect)
 //Determines if the mouse is selecting a piece
 function mousePiece(mouse, piece)
 {
-    if(mouseCollision(mouse, piece) && mouse.mouseDown && turn === piece.colour)
+    // if(mouseCollision(mouse, piece) && mouse.mouseDown && turn === piece.colour)
+    //     mouse.pieceHeld = piece; 
+
+    if(mouseCollision(mouse, piece))
         mouse.pieceHeld = piece; 
 }
 
@@ -137,7 +150,6 @@ function piecePosUpdate(piece)
 function adjustLegalMovesForPawn(piece)
 {
     let tileIndex = [];
-    piece.legalMoves = []; //Resets the legalMoves every time the function is called
 
     //Finds the index within the tiles array of the tile associated with the piece passed to this function
     for(let i = 0; i < tiles.length; i++)
@@ -181,7 +193,7 @@ function adjustLegalMovesForPawn(piece)
     }  
 }
 
-function horizontalMomvement(piece, distance)
+function horizontalMovement(piece, distance)
 {
     let tileIndex = [];
 
@@ -195,54 +207,62 @@ function horizontalMomvement(piece, distance)
         }
     }
 
-    for(let i = 1; i < distance + 1; i++)
-    {
-        try{
-            if(tiles[tileIndex[0] + i][tileIndex[1]].piece.colour != piece.colour)
+    piece.blocked = false; 
+    for(let i = 1; i < 8; i++)
+    {   
+        if((tileIndex[0] + i) < 8)
+        {
+            if(tiles[tileIndex[0] + i][tileIndex[1]].piece.colour != piece.colour && piece.blocked == false && i <= distance && piece.blocksCheck == false)
                 piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1]]);
+
             if(tiles[tileIndex[0] + i][tileIndex[1]].piece != 'none')
-                break;
-        }catch(e){
-            break;
+                piece.blocked = true;
+
+            piece.horizontalRay[0].push(tiles[tileIndex[0] + i][tileIndex[1]]);
         }
     }
 
-    for(let i = 1; i < distance + 1; i++)
-    {
-        try{
-            if(tiles[tileIndex[0] - i][tileIndex[1]].piece.colour != piece.colour)
+    piece.blocked = false; 
+    for(let i = 1; i < 8 + 1; i++)
+    {   
+        if((tileIndex[0] - i) > -1)
+        {
+            if(tiles[tileIndex[0] - i][tileIndex[1]].piece.colour != piece.colour && piece.blocked == false && i <= distance && piece.blocksCheck == false)
                 piece.legalMoves.push(tiles[tileIndex[0] - i][tileIndex[1]]);
             if(tiles[tileIndex[0] - i][tileIndex[1]].piece != 'none')
-                break;
-        }catch(e){
-            break;
+                piece.blocked = true;
+
+            piece.horizontalRay[1].push(tiles[tileIndex[0] - i][tileIndex[1]]);
         }
     }
 
-    for(let i = 1; i < distance + 1; i++)
-    {
-        try{
-            if(tiles[tileIndex[0]][tileIndex[1] + i].piece.colour != piece.colour)
+    piece.blocked = false; 
+    for(let i = 1; i < 8 + 1; i++)
+    {   
+        if((tileIndex[1] + i) < 8)
+        {
+            if(tiles[tileIndex[0]][tileIndex[1] + i].piece.colour != piece.colour && piece.blocked == false && i <= distance && piece.blocksCheck == false)
                 piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] + i]);
             if(tiles[tileIndex[0]][tileIndex[1] + i].piece != 'none')
-                break;
-        }catch(e){
-            break;
+                piece.blocked = true;
+
+            piece.horizontalRay[2].push(tiles[tileIndex[0]][tileIndex[1] + i]);
         }
     }
 
-    for(let i = 1; i < distance + 1; i++)
-    {
-        try{
-            if(tiles[tileIndex[0]][tileIndex[1] - i].piece.colour != piece.colour)
+    piece.blocked = false; 
+    for(let i = 1; i < 8 + 1; i++)
+    {   
+        if((tileIndex[1] - i) > -1)
+        {
+            if(tiles[tileIndex[0]][tileIndex[1] - i].piece.colour != piece.colour && piece.blocked == false && i <= distance && piece.blocksCheck == false)
                 piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] - i]);
             if(tiles[tileIndex[0]][tileIndex[1] - i].piece != 'none')
-                break;
-        }catch(e){
-            break;
+                piece.blocked = true;
+
+            piece.horizontalRay[3].push(tiles[tileIndex[0]][tileIndex[1] - i]);
         }
     }
-
 }
 
 function diagonalMovement(piece, distance)
@@ -260,52 +280,56 @@ function diagonalMovement(piece, distance)
         }
     }
 
-    for(let i = 1; i < distance + 1; i++)
+    piece.blocked = false; 
+    for(let i = 1; i < 8 + 1; i++)
     {
-        try{
-            if(tiles[tileIndex[0] + i][tileIndex[1] + i].piece.colour != piece.colour)
+
+         if((tileIndex[0] + i) < 8 && (tileIndex[1] + i) < 8)
+        {
+            if(tiles[tileIndex[0] + i][tileIndex[1] + i].piece.colour != piece.colour && piece.blocked == false && i <= distance && piece.blocksCheck == false)
                 piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1] + i]);
-            
+        
             if(tiles[tileIndex[0] + i][tileIndex[1] + i].piece != 'none')
-                break;
-        }catch (e){
-            break;
+                piece.blocked = true; 
         }
     }
-    for(let i = 1; i < distance + 1; i++)
+
+    piece.blocked = false; 
+    for(let i = 1; i < 8 + 1; i++)
     {
-        try{
-            if(tiles[tileIndex[0] + i][tileIndex[1] - i].piece.colour != piece.colour)
+        if((tileIndex[0] + i) < 8 && (tileIndex[1] - i) > -1)
+        {
+            if(tiles[tileIndex[0] + i][tileIndex[1] - i].piece.colour != piece.colour && piece.blocked == false && i <= distance && piece.blocksCheck == false)
                 piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1] - i]);
             
             if(tiles[tileIndex[0] + i][tileIndex[1] - i].piece != 'none')
-                break;
-        }catch (e){
-            break;
+                piece.blocked = true;
         }
     }
-    for(let i = 1; i < distance + 1; i++)
+
+    piece.blocked = false; 
+    for(let i = 1; i < 8 + 1; i++)
     {
-        try{
-            if(tiles[tileIndex[0] - i][tileIndex[1] - i].piece.colour != piece.colour)
+        if((tileIndex[0] - i) > -1 && (tileIndex[1] - i) > -1)
+        {
+            if(tiles[tileIndex[0] - i][tileIndex[1] - i].piece.colour != piece.colour && piece.blocked == false && i <= distance && piece.blocksCheck == false)
                 piece.legalMoves.push(tiles[tileIndex[0] - i][tileIndex[1] - i]);
             
             if(tiles[tileIndex[0] - i][tileIndex[1] - i].piece != 'none')
-                break;
-        }catch (e){
-            break;
+                piece.blocked = true;
         }
     }
-    for(let i = 1; i < distance + 1; i++)
+
+    piece.blocked = false; 
+    for(let i = 1; i < 8 + 1; i++)
     {
-        try{
-            if(tiles[tileIndex[0] - i][tileIndex[1] + i].piece.colour != piece.colour)
+        if((tileIndex[0] - i) > -1 && (tileIndex[1] + i) < 8)
+        {
+            if(tiles[tileIndex[0] - i][tileIndex[1] + i].piece.colour != piece.colour && piece.blocked == false && i <= distance && piece.blocksCheck == false)
                 piece.legalMoves.push(tiles[tileIndex[0] - i][tileIndex[1] + i]);
             
             if(tiles[tileIndex[0] - i][tileIndex[1] + i].piece != 'none')
-                break;
-        }catch (e){
-            break;
+                piece.blocked = true;
         }
     }
 }
@@ -324,56 +348,38 @@ function knightMovement(piece)
         }
     }
     
-
-    try{
-        if(tiles[tileIndex[0] + 2][tileIndex[1] + 1].piece.colour != piece.colour)
+    if((tileIndex[0] + 2) < 8 && (tileIndex[1] + 1) < 8)
+        if(tiles[tileIndex[0] + 2][tileIndex[1] + 1].piece.colour != piece.colour && piece.blocksCheck == false)
             piece.legalMoves.push(tiles[tileIndex[0] + 2][tileIndex[1] + 1]);
-    }catch (e){
-    }
 
-    try{
-        if(tiles[tileIndex[0] + 2][tileIndex[1] - 1].piece.colour != piece.colour)
-        piece.legalMoves.push(tiles[tileIndex[0] + 2][tileIndex[1] - 1]);
-    }catch(e){
-    }
+    if((tileIndex[0] + 2) < 8 && (tileIndex[1] - 1) > -1)
+        if(tiles[tileIndex[0] + 2][tileIndex[1] - 1].piece.colour != piece.colour && piece.blocksCheck == false)
+            piece.legalMoves.push(tiles[tileIndex[0] + 2][tileIndex[1] - 1]);
 
-    try{
-        if(tiles[tileIndex[0] + 1][tileIndex[1] + 2].piece.colour != piece.colour)
+    if((tileIndex[0] + 1) < 8 && (tileIndex[1] + 2) < 8)
+        if(tiles[tileIndex[0] + 1][tileIndex[1] + 2].piece.colour != piece.colour && piece.blocksCheck == false)
             piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] + 2]);
-    }catch (e){
-    }
 
-    try{
-        if(tiles[tileIndex[0] + 1][tileIndex[1] - 2].piece.colour != piece.colour)
-        piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] - 2]);
-    }catch(e){
-    }
+    if((tileIndex[0] + 1) < 8 && (tileIndex[1] - 2) > -1)
+        if(tiles[tileIndex[0] + 1][tileIndex[1] - 2].piece.colour != piece.colour && piece.blocksCheck == false)
+            piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] - 2]);
 
-    try{
-        if(tiles[tileIndex[0] - 2][tileIndex[1] - 1].piece.colour != piece.colour)
+    if((tileIndex[0] - 2) > -1 && (tileIndex[1] - 1) > -1)
+        if(tiles[tileIndex[0] - 2][tileIndex[1] - 1].piece.colour != piece.colour && piece.blocksCheck == false)
             piece.legalMoves.push(tiles[tileIndex[0] - 2][tileIndex[1] - 1]);
-    }catch (e){
-    }
 
-    try{
-        if(tiles[tileIndex[0] - 2][tileIndex[1] + 1].piece.colour != piece.colour)
-        piece.legalMoves.push(tiles[tileIndex[0] - 2][tileIndex[1] + 1]);
-    }catch(e){
-    }
+    if((tileIndex[0] - 2) > -1 && (tileIndex[1] + 1) < 8)
+        if(tiles[tileIndex[0] - 2][tileIndex[1] + 1].piece.colour != piece.colour && piece.blocksCheck == false)
+            piece.legalMoves.push(tiles[tileIndex[0] - 2][tileIndex[1] + 1]);
 
-    try{
-        if(tiles[tileIndex[0] - 1][tileIndex[1] - 2].piece.colour != piece.colour)
+    if((tileIndex[0] - 1) > -1 && (tileIndex[1] - 2) > -1)
+        if(tiles[tileIndex[0] - 1][tileIndex[1] - 2].piece.colour != piece.colour && piece.blocksCheck == false)
             piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1] - 2]);
-    }catch (e){
-    }
-
-    try{
-        if(tiles[tileIndex[0] - 1][tileIndex[1] + 2].piece.colour != piece.colour)
-        piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1] + 2]);
-    }catch(e){
-    }
+            
+    if((tileIndex[0] - 1) > -1 && (tileIndex[1] + 2) < 8)
+        if(tiles[tileIndex[0] - 1][tileIndex[1] + 2].piece.colour != piece.colour && piece.blocksCheck == false)
+            piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1] + 2]);
 }
-
 
 //Push piece images into the sprites array
 for(let i = 0; i < 12; i++)
@@ -415,27 +421,27 @@ for(let i = 0; i < 8; i++)
 
 
 //Add all the starting pieces
-for(let i = 0; i < 8; i++)
-{
-    pieces.push(new Piece(tiles[1][i], sprites[5], 'pawn', 'white'));
+// for(let i = 0; i < 8; i++)
+// {
+//     pieces.push(new Piece(tiles[1][i], sprites[5], 'pawn', 'white'));
 
-    pieces.push(new Piece(tiles[6][i], sprites[11], 'pawn', 'black'));
-}
+//     pieces.push(new Piece(tiles[6][i], sprites[11], 'pawn', 'black'));
+// }
 
-pieces.push(new Piece(tiles[0][0], sprites[4], 'rook', 'white'));
-pieces.push(new Piece(tiles[0][7], sprites[4], 'rook', 'white'));
+// pieces.push(new Piece(tiles[0][0], sprites[4], 'rook', 'white'));
+// pieces.push(new Piece(tiles[0][7], sprites[4], 'rook', 'white'));
 
-pieces.push(new Piece(tiles[7][0], sprites[10], 'rook', 'black'));
-pieces.push(new Piece(tiles[7][7], sprites[10], 'rook', 'black'));
+// pieces.push(new Piece(tiles[7][0], sprites[10], 'rook', 'black'));
+// pieces.push(new Piece(tiles[7][7], sprites[10], 'rook', 'black'));
 
-pieces.push(new Piece(tiles[0][1], sprites[3], 'knight', 'white'));
-pieces.push(new Piece(tiles[0][6], sprites[3], 'knight', 'white'));
+// pieces.push(new Piece(tiles[0][1], sprites[3], 'knight', 'white'));
+// pieces.push(new Piece(tiles[0][6], sprites[3], 'knight', 'white'));
 
-pieces.push(new Piece(tiles[7][1], sprites[9], 'knight', 'black'));
-pieces.push(new Piece(tiles[7][6], sprites[9], 'knight', 'black'));
+// pieces.push(new Piece(tiles[7][1], sprites[9], 'knight', 'black'));
+// pieces.push(new Piece(tiles[7][6], sprites[9], 'knight', 'black'));
 
-pieces.push(new Piece(tiles[0][2], sprites[2], 'bishop', 'white'));
-pieces.push(new Piece(tiles[0][5], sprites[2], 'bishop', 'white'));
+// pieces.push(new Piece(tiles[0][2], sprites[2], 'bishop', 'white'));
+// pieces.push(new Piece(tiles[0][5], sprites[2], 'bishop', 'white'));
 
 pieces.push(new Piece(tiles[7][2], sprites[8], 'bishop', 'black'));
 pieces.push(new Piece(tiles[7][5], sprites[8], 'bishop', 'black'));
@@ -443,17 +449,22 @@ pieces.push(new Piece(tiles[7][5], sprites[8], 'bishop', 'black'));
 pieces.push(new Piece(tiles[0][3], sprites[1], 'queen', 'white'));
 pieces.push(new Piece(tiles[7][3], sprites[7], 'queen', 'black'));
 
-pieces.push(new Piece(tiles[0][4], sprites[0], 'king', 'white'));
-pieces.push(new Piece(tiles[7][4], sprites[6], 'king', 'black'));
+let whiteKing = new Piece(tiles[0][4], sprites[0], 'king', 'white')
+let blackKing = new Piece(tiles[7][4], sprites[6], 'king', 'black')
+pieces.push(whiteKing);
+pieces.push(blackKing);
 
 
 //Links the Tile object's interal "piece" variable to the piece assigned to the tile
 for(let i = 0; i < pieces.length; i++)
 {
     pieces[i].tile.piece = pieces[i];
+    if(pieces[i].colour === 'white')
+        pieces[i].king = whiteKing;
+    else 
+        pieces[i].king = blackKing;
 }
 
-console.log(pieces);
 
 function loop()
 {   
@@ -509,28 +520,31 @@ function loop()
         //If the mouse is not currently holding a piece, check whether the currently indexed piece can be held by it
         if(mouseObj.pieceHeld == 'none')
             mousePiece(mouseObj, pieces[i]);
-        else //Create a list of legal moves for the piece currently held by the mouse (only pawns for now)
-        {
-            pieces[i].legalMoves = [];
 
-            if(pieces[i].type === 'pawn')
-                adjustLegalMovesForPawn(pieces[i]);
-            else if(pieces[i].type === 'rook')
-                horizontalMomvement(pieces[i], 8);
-            else if(pieces[i].type === 'bishop')
-                diagonalMovement(pieces[i], 8);
-            else if(pieces[i].type === 'knight')
-                knightMovement(pieces[i]);    
-            else if(pieces[i].type === 'queen')
-            {
-                horizontalMomvement(pieces[i], 8);
-                diagonalMovement(pieces[i], 8);
-            }
-            else if(pieces[i].type === 'king')
-            {
-                horizontalMomvement(pieces[i], 1);
-                diagonalMovement(pieces[i], 1);
-            }
+        // pieces[i].inCheck = false;
+        pieces[i].legalMoves = [];
+        pieces[i].diagonalRay = [[],[],[],[]];
+        pieces[i].horizontalRay = [[],[],[],[]];
+
+        if(pieces[i].type === 'pawn')
+            adjustLegalMovesForPawn(pieces[i]);
+        else if(pieces[i].type === 'rook')
+            horizontalMovement(pieces[i], 8);
+        else if(pieces[i].type === 'bishop')
+            diagonalMovement(pieces[i], 8);
+        else if(pieces[i].type === 'knight')
+        {
+            knightMovement(pieces[i]);
+        }
+        else if(pieces[i].type === 'queen')
+        {
+            horizontalMovement(pieces[i], 8);
+            diagonalMovement(pieces[i], 8);
+        }
+        else if(pieces[i].type === 'king')
+        {
+            horizontalMovement(pieces[i], 1);
+            diagonalMovement(pieces[i], 1);
         }
 
 
@@ -542,7 +556,6 @@ function loop()
         c.drawImage(pieces[i].sprite, pieces[i].x, pieces[i].y, 80, 80);
     }
 
-    
     window.requestAnimationFrame(loop);
 }
 loop();
