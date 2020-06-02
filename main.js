@@ -622,12 +622,8 @@ function loop()
         }
     }
     
-    //Remove any pieces that are not assigned to tiles 
-    for(let i = 0; i < pieces.length; i++)
-    {
-        if(pieces[i].tile === 'none')
-            pieces.splice(i, 1);
-    }
+    
+    
 
     //Draw each piece in the pieces array
     for(let i = 0; i < pieces.length; i++)
@@ -644,7 +640,7 @@ function loop()
 
         if(pieces[i].type === 'pawn')
             adjustLegalMovesForPawn(pieces[i]);
-        else if(pieces[i].type === 'rook')
+        if(pieces[i].type === 'rook')
             horizontalMovement(pieces[i], 8);
         else if(pieces[i].type === 'bishop')
             diagonalMovement(pieces[i], 8);
@@ -667,8 +663,14 @@ function loop()
         if(mouseObj.pieceHeld == pieces[i])
         {
             piecePosUpdate(pieces[i]);
-            console.log(pieces[i].kingBox);
         }    
+
+        //Remove any pieces that are not assigned to tiles 
+        for(let i = 0; i < pieces.length; i++)
+        {
+            if(pieces[i].tile === 'none')
+                pieces.splice(i, 1);
+        }
 
         c.drawImage(pieces[i].sprite, pieces[i].x, pieces[i].y, 80, 80);
     }
