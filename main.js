@@ -623,6 +623,7 @@ function loop()
     }
     
     
+
     
 
     //Draw each piece in the pieces array
@@ -633,6 +634,7 @@ function loop()
             mousePiece(mouseObj, pieces[i]);
 
         // pieces[i].inCheck = false;
+        let piecesToRemove = [];
         pieces[i].defended = false;
         pieces[i].legalMoves = [];
         pieces[i].diagonalRay = [[],[],[],[]];
@@ -669,10 +671,15 @@ function loop()
         for(let i = 0; i < pieces.length; i++)
         {
             if(pieces[i].tile === 'none')
-                pieces.splice(i, 1);
+                piecesToRemove.push(pieces[i]);
         }
 
         c.drawImage(pieces[i].sprite, pieces[i].x, pieces[i].y, 80, 80);
+
+        for(let i = 0; i < piecesToRemove.length; i++)
+        {
+            pieces.splice(pieces.indexOf(piecesToRemove[i]), 1);
+        }
     }
 
     window.requestAnimationFrame(loop);
