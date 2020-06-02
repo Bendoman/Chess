@@ -44,8 +44,8 @@ const Piece = function(tile, sprite, type, colour)
     this.diagonalRay = [[],[],[],[]];
     this.horizontalRay = [[],[],[],[]];
 
-    this.inCheck = false; 
-    
+    this.axisOfCheck = [[],[]];
+
     this.x = this.tile.x;
     this.y = this.tile.y;
 
@@ -260,6 +260,30 @@ function horizontalMovement(piece, distance)
             piece.horizontalRay[3].push(tiles[tileIndex[0]][tileIndex[1] - i]);
         }
     }
+
+    for(let i = 0; i < piece.legalMoves.length; i++)
+    {
+        if(piece.legalMoves[i].piece.type === 'king')
+        {
+            for(let y = 0; y < 4; y++)
+            {
+                for(let j = 0; j < piece.horizontalRay[y].length; j++)
+                {
+                    if(piece.horizontalRay[y][j].piece.type === 'king')
+                    {
+                        if(piece.horizontalRay[y][j].piece.axisOfCheck[0].length == 0)
+                            piece.horizontalRay[y][j].piece.axisOfCheck[0] = piece.horizontalRay[y];
+                        else
+                            piece.horizontalRay[y][j].piece.axisOfCheck[1] = piece.horizontalRay[y];
+                    }    
+
+                    //piece.horizontalRay[y][j].piece.axisOfCheck = piece.horizontalRay[y];
+                }
+            }
+        }
+    }
+
+
 }
 
 function diagonalMovement(piece, distance)
@@ -288,6 +312,8 @@ function diagonalMovement(piece, distance)
         
             if(tiles[tileIndex[0] + i][tileIndex[1] + i].piece != 'none')
                 piece.blocked = true; 
+
+            piece.diagonalRay[0].push(tiles[tileIndex[0] + i][tileIndex[1] + i]);
         }
     }
 
@@ -301,7 +327,9 @@ function diagonalMovement(piece, distance)
             
             if(tiles[tileIndex[0] + i][tileIndex[1] - i].piece != 'none')
                 piece.blocked = true;
-        }
+            
+            piece.diagonalRay[0].push(tiles[tileIndex[0] + i][tileIndex[1] - i]);
+        } 
     }
 
     piece.blocked = false; 
@@ -314,6 +342,8 @@ function diagonalMovement(piece, distance)
             
             if(tiles[tileIndex[0] - i][tileIndex[1] - i].piece != 'none')
                 piece.blocked = true;
+
+            piece.diagonalRay[0].push(tiles[tileIndex[0] - i][tileIndex[1] - i]);
         }
     }
 
@@ -327,6 +357,28 @@ function diagonalMovement(piece, distance)
             
             if(tiles[tileIndex[0] - i][tileIndex[1] + i].piece != 'none')
                 piece.blocked = true;
+
+            piece.diagonalRay[0].push(tiles[tileIndex[0] - i][tileIndex[1] + i]);        
+        }
+    }
+
+    for(let i = 0; i < piece.legalMoves.length; i++)
+    {
+        if(piece.legalMoves[i].piece.type === 'king')
+        {
+            for(let y = 0; y < 4; y++)
+            {
+                for(let j = 0; j < piece.diagonalRay[y].length; j++)
+                {
+                    if(piece.diagonalRay[y][j].piece.type === 'king')
+                    {
+                        if(piece.diagonalRay[y][j].piece.axisOfCheck[0].length == 0)
+                            piece.diagonalRay[y][j].piece.axisOfCheck[0] = piece.diagonalRay[y];
+                        else
+                            piece.diagonalRay[y][j].piece.axisOfCheck[1] = piece.diagonalRay[y];
+                    }    
+                }
+            }
         }
     }
 }
@@ -377,6 +429,69 @@ function knightMovement(piece)
         if(tiles[tileIndex[0] - 1][tileIndex[1] + 2].piece.colour != piece.colour)
             piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1] + 2]);
 }
+
+function kingMovement(piece)
+{
+    diagonalMovement(piece, 1);
+    horizontalMovement(piece, 1);
+
+    let movesToRemove = [];
+
+    for(let i = 0; i < pieces.length; i++)
+    {
+        if(pieces[i].colour != piece.colour)
+        {
+            for(let y = 0; y < piece.legalMoves.length; y++)
+            {
+                if(pieces[i].legalMoves.includes(piece.legalMoves[y]))
+                {
+                    movesToRemove.push(piece.legalMoves[y]);
+                    
+                }
+            }   
+        }
+    }   
+
+    if(piece.axisOfCheck[0].length > 0)
+    {
+        for(let i = 0; i < piece.axisOfCheck[0].length; i++)
+        {
+            if(piece.legalMoves.includes(piece.axisOfCheck[0][i]) && movesToRemove.includes(piece.axisOfCheck[0][i]) == false)
+                movesToRemove.push(piece.axisOfCheck[0][i]);
+        }
+
+        if(piece.axisOfCheck[1].length > 0)
+        {
+            for(let i = 0; i < piece.axisOfCheck[1].length; i++)
+            {
+                if(piece.legalMoves.includes(piece.axisOfCheck[1][i]) && movesToRemove.includes(piece.axisOfCheck[1][i]) == false)
+                    movesToRemove.push(piece.axisOfCheck[1][i]);
+            }
+        }
+    }
+
+
+    // if(piece.axisOfCheck != 'none')
+    // {
+    //     for(let i = 0; i < piece.axisOfCheck.length; i++)
+    //     {
+    //         if(piece.legalMoves.includes(piece.axisOfCheck[i]) && movesToRemove.includes(piece.axisOfCheck[i]) == false)
+    //         {
+    //             movesToRemove.push(piece.axisOfCheck[i]);
+    //         }
+    //     }
+    // }
+
+    for(let i = 0; i < movesToRemove.length; i++)
+    {
+        piece.legalMoves.splice(piece.legalMoves.indexOf(movesToRemove[i]), 1);
+    }
+
+    piece.axisOfCheck = [[],[]];
+}
+
+
+
 
 //Push piece images into the sprites array
 for(let i = 0; i < 12; i++)
@@ -441,9 +556,9 @@ for(let i = 0; i < 8; i++)
 // pieces.push(new Piece(tiles[0][5], sprites[2], 'bishop', 'white'));
 
 pieces.push(new Piece(tiles[7][2], sprites[8], 'bishop', 'black'));
-pieces.push(new Piece(tiles[7][5], sprites[8], 'bishop', 'black'));
+// pieces.push(new Piece(tiles[7][5], sprites[8], 'bishop', 'black'));
 
-pieces.push(new Piece(tiles[0][3], sprites[1], 'queen', 'white'));
+// pieces.push(new Piece(tiles[0][3], sprites[1], 'queen', 'white'));
 pieces.push(new Piece(tiles[7][3], sprites[7], 'queen', 'black'));
 
 let whiteKing = new Piece(tiles[0][4], sprites[0], 'king', 'white')
@@ -540,15 +655,15 @@ function loop()
         }
         else if(pieces[i].type === 'king')
         {
-            horizontalMovement(pieces[i], 1);
-            diagonalMovement(pieces[i], 1);
+            kingMovement(pieces[i]);
         }
-
 
 
         //If the mouse is holding the currently indexed piece, update its position 
         if(mouseObj.pieceHeld == pieces[i])
+        {
             piecePosUpdate(pieces[i]);
+        }    
 
         c.drawImage(pieces[i].sprite, pieces[i].x, pieces[i].y, 80, 80);
     }
