@@ -46,6 +46,8 @@ const Piece = function(tile, sprite, type, colour)
 
     this.axisOfCheck = [[],[]];
 
+    this.defended = false;
+
     this.x = this.tile.x;
     this.y = this.tile.y;
 
@@ -226,8 +228,15 @@ function horizontalMovement(piece, distance)
         {
             if(tiles[tileIndex[0] - i][tileIndex[1]].piece.colour != piece.colour && piece.blocked == false && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0] - i][tileIndex[1]]);
-            if(tiles[tileIndex[0] - i][tileIndex[1]].piece != 'none')
+            if(tiles[tileIndex[0] - i][tileIndex[1]].piece != 'none' && piece.blocked == false)
+            {
+                if(tiles[tileIndex[0] - i][tileIndex[1]].piece.colour == piece.colour)
+                {
+                    tiles[tileIndex[0] - i][tileIndex[1]].piece.defended = true;
+                }
+
                 piece.blocked = true;
+            }    
 
             piece.horizontalRay[1].push(tiles[tileIndex[0] - i][tileIndex[1]]);
         }
@@ -276,8 +285,6 @@ function horizontalMovement(piece, distance)
                         else
                             piece.horizontalRay[y][j].piece.axisOfCheck[1] = piece.horizontalRay[y];
                     }    
-
-                    //piece.horizontalRay[y][j].piece.axisOfCheck = piece.horizontalRay[y];
                 }
             }
         }
@@ -445,8 +452,15 @@ function kingMovement(piece)
             {
                 if(pieces[i].legalMoves.includes(piece.legalMoves[y]))
                 {
-                    movesToRemove.push(piece.legalMoves[y]);
+                    if(movesToRemove.includes(piece.legalMoves[y]) == false)   
+                        movesToRemove.push(piece.legalMoves[y]);
+
                     
+                }
+                else if(piece.legalMoves[y].piece.defended)
+                {
+                    if(movesToRemove.includes(piece.legalMoves[y]) == false)
+                        movesToRemove.push(piece.legalMoves[y]);
                 }
             }   
         }
@@ -459,7 +473,6 @@ function kingMovement(piece)
             if(piece.legalMoves.includes(piece.axisOfCheck[0][i]) && movesToRemove.includes(piece.axisOfCheck[0][i]) == false)
                 movesToRemove.push(piece.axisOfCheck[0][i]);
         }
-
         if(piece.axisOfCheck[1].length > 0)
         {
             for(let i = 0; i < piece.axisOfCheck[1].length; i++)
@@ -469,18 +482,6 @@ function kingMovement(piece)
             }
         }
     }
-
-
-    // if(piece.axisOfCheck != 'none')
-    // {
-    //     for(let i = 0; i < piece.axisOfCheck.length; i++)
-    //     {
-    //         if(piece.legalMoves.includes(piece.axisOfCheck[i]) && movesToRemove.includes(piece.axisOfCheck[i]) == false)
-    //         {
-    //             movesToRemove.push(piece.axisOfCheck[i]);
-    //         }
-    //     }
-    // }
 
     for(let i = 0; i < movesToRemove.length; i++)
     {
@@ -555,14 +556,15 @@ for(let i = 0; i < 8; i++)
 // pieces.push(new Piece(tiles[0][2], sprites[2], 'bishop', 'white'));
 // pieces.push(new Piece(tiles[0][5], sprites[2], 'bishop', 'white'));
 
-pieces.push(new Piece(tiles[7][2], sprites[8], 'bishop', 'black'));
+pieces.push(new Piece(tiles[1][3], sprites[8], 'bishop', 'black'));
 // pieces.push(new Piece(tiles[7][5], sprites[8], 'bishop', 'black'));
 
 // pieces.push(new Piece(tiles[0][3], sprites[1], 'queen', 'white'));
 pieces.push(new Piece(tiles[7][3], sprites[7], 'queen', 'black'));
 
-let whiteKing = new Piece(tiles[0][4], sprites[0], 'king', 'white')
+let whiteKing = new Piece(tiles[0][3], sprites[0], 'king', 'white')
 let blackKing = new Piece(tiles[7][4], sprites[6], 'king', 'black')
+
 pieces.push(whiteKing);
 pieces.push(blackKing);
 
@@ -634,6 +636,7 @@ function loop()
             mousePiece(mouseObj, pieces[i]);
 
         // pieces[i].inCheck = false;
+        pieces[i].defended = false;
         pieces[i].legalMoves = [];
         pieces[i].diagonalRay = [[],[],[],[]];
         pieces[i].horizontalRay = [[],[],[],[]];
