@@ -107,7 +107,7 @@ function piecePosUpdate(piece)
     piece.x = mouseObj.x - 40;
     piece.y = mouseObj.y - 40;
     
-    if(mouseObj.mouseDown == false)
+    if(!mouseObj.mouseDown)
         mouseObj.pieceHeld = 'none';
 
     for(let i = 0; i < tiles.length; i++)
@@ -116,7 +116,7 @@ function piecePosUpdate(piece)
         {
             //If the mouse has moved over a tile with a piece selected (the function does not get called if there is no piece selected), and lets go
             //Also checks if it is a legal move for the piece selected
-            if(mouseCollision(mouseObj, tiles[i][y]) && mouseObj.mouseDown == false && piece.legalMoves.includes(tiles[i][y]))
+            if(mouseCollision(mouseObj, tiles[i][y]) && !mouseObj.mouseDown && piece.legalMoves.includes(tiles[i][y]))
             {
                 //If there is already a piece on the tile unasign it's tile so that it is ready for deletion
                 tiles[i][y].piece.tile = 'none';
@@ -128,7 +128,7 @@ function piecePosUpdate(piece)
                 piece.tile = tiles[i][y];
                 piece.tile.piece = piece;
 
-                if(piece.hasMoved == false)
+                if(!piece.hasMoved)
                     piece.hasMoved = true;
 
                 //Toggle turns after each move
@@ -139,7 +139,7 @@ function piecePosUpdate(piece)
             }
         }
     }
-
+    
     //When the mouse lets go of a piece, it returns to the coordinates of the tile associated with the piece
     if(mouseObj.pieceHeld != piece)
     {
@@ -165,7 +165,7 @@ function adjustLegalMovesForPawn(piece)
     //Think about changing this to a more general solution for colours ala rook rules
     if(piece.colour === 'white' && tileIndex[0] != 7)
     {
-        if(piece.hasMoved == false)
+        if(!piece.hasMoved)
             piece.legalMoves.push(tiles[tileIndex[0] + 2][tileIndex[1]]);
 
         if(tiles[tileIndex[0] + 1][tileIndex[1]].piece === 'none')
@@ -180,7 +180,7 @@ function adjustLegalMovesForPawn(piece)
     }  
     else if(piece.colour === 'black' && tileIndex[0] != 0)
     {
-        if(piece.hasMoved == false)
+        if(!piece.hasMoved)
             piece.legalMoves.push(tiles[tileIndex[0] - 2][tileIndex[1]]);
 
         if(tiles[tileIndex[0] - 1][tileIndex[1]].piece === 'none')
@@ -213,11 +213,16 @@ function horizontalMovement(piece, distance)
     {   
         if((tileIndex[0] + i) < 8)
         {
-            if(tiles[tileIndex[0] + i][tileIndex[1]].piece.colour != piece.colour && piece.blocked == false && i <= distance)
+            if(tiles[tileIndex[0] + i][tileIndex[1]].piece.colour != piece.colour && !piece.blocked && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1]]);
 
-            if(tiles[tileIndex[0] + i][tileIndex[1]].piece != 'none')
+            if(tiles[tileIndex[0] + i][tileIndex[1]].piece != 'none' && !piece.blocked)
+            {
+                if(tiles[tileIndex[0] + i][tileIndex[1]].piece.colour == piece.colour)
+                    tiles[tileIndex[0] + i][tileIndex[1]].piece.defended = true;
+
                 piece.blocked = true;
+            }
 
             piece.horizontalRay[0].push(tiles[tileIndex[0] + i][tileIndex[1]]);
         }
@@ -228,15 +233,13 @@ function horizontalMovement(piece, distance)
     {   
         if((tileIndex[0] - i) > -1)
         {
-            if(tiles[tileIndex[0] - i][tileIndex[1]].piece.colour != piece.colour && piece.blocked == false && i <= distance)
+            if(tiles[tileIndex[0] - i][tileIndex[1]].piece.colour != piece.colour && !piece.blocked && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0] - i][tileIndex[1]]);
-            if(tiles[tileIndex[0] - i][tileIndex[1]].piece != 'none' && piece.blocked == false)
+            if(tiles[tileIndex[0] - i][tileIndex[1]].piece != 'none' && !piece.blocked)
             {
                 if(tiles[tileIndex[0] - i][tileIndex[1]].piece.colour == piece.colour)
-                {
                     tiles[tileIndex[0] - i][tileIndex[1]].piece.defended = true;
-                }
-
+                
                 piece.blocked = true;
             }    
 
@@ -249,7 +252,7 @@ function horizontalMovement(piece, distance)
     {   
         if((tileIndex[1] + i) < 8)
         {
-            if(tiles[tileIndex[0]][tileIndex[1] + i].piece.colour != piece.colour && piece.blocked == false && i <= distance)
+            if(tiles[tileIndex[0]][tileIndex[1] + i].piece.colour != piece.colour && !piece.blocked && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] + i]);
             if(tiles[tileIndex[0]][tileIndex[1] + i].piece != 'none')
                 piece.blocked = true;
@@ -263,7 +266,7 @@ function horizontalMovement(piece, distance)
     {   
         if((tileIndex[1] - i) > -1)
         {
-            if(tiles[tileIndex[0]][tileIndex[1] - i].piece.colour != piece.colour && piece.blocked == false && i <= distance)
+            if(tiles[tileIndex[0]][tileIndex[1] - i].piece.colour != piece.colour && !piece.blocked && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] - i]);
             if(tiles[tileIndex[0]][tileIndex[1] - i].piece != 'none')
                 piece.blocked = true;
@@ -316,7 +319,7 @@ function diagonalMovement(piece, distance)
 
          if((tileIndex[0] + i) < 8 && (tileIndex[1] + i) < 8)
         {
-            if(tiles[tileIndex[0] + i][tileIndex[1] + i].piece.colour != piece.colour && piece.blocked == false && i <= distance)
+            if(tiles[tileIndex[0] + i][tileIndex[1] + i].piece.colour != piece.colour && !piece.blocked && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1] + i]);
         
             if(tiles[tileIndex[0] + i][tileIndex[1] + i].piece != 'none')
@@ -331,7 +334,7 @@ function diagonalMovement(piece, distance)
     {
         if((tileIndex[0] + i) < 8 && (tileIndex[1] - i) > -1)
         {
-            if(tiles[tileIndex[0] + i][tileIndex[1] - i].piece.colour != piece.colour && piece.blocked == false && i <= distance)
+            if(tiles[tileIndex[0] + i][tileIndex[1] - i].piece.colour != piece.colour && !piece.blocked && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1] - i]);
             
             if(tiles[tileIndex[0] + i][tileIndex[1] - i].piece != 'none')
@@ -346,7 +349,7 @@ function diagonalMovement(piece, distance)
     {
         if((tileIndex[0] - i) > -1 && (tileIndex[1] - i) > -1)
         {
-            if(tiles[tileIndex[0] - i][tileIndex[1] - i].piece.colour != piece.colour && piece.blocked == false && i <= distance)
+            if(tiles[tileIndex[0] - i][tileIndex[1] - i].piece.colour != piece.colour && !piece.blocked && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0] - i][tileIndex[1] - i]);
             
             if(tiles[tileIndex[0] - i][tileIndex[1] - i].piece != 'none')
@@ -361,7 +364,7 @@ function diagonalMovement(piece, distance)
     {
         if((tileIndex[0] - i) > -1 && (tileIndex[1] + i) < 8)
         {
-            if(tiles[tileIndex[0] - i][tileIndex[1] + i].piece.colour != piece.colour && piece.blocked == false && i <= distance)
+            if(tiles[tileIndex[0] - i][tileIndex[1] + i].piece.colour != piece.colour && !piece.blocked && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0] - i][tileIndex[1] + i]);
             
             if(tiles[tileIndex[0] - i][tileIndex[1] + i].piece != 'none')
@@ -454,14 +457,14 @@ function kingMovement(piece)
             {
                 if(pieces[i].legalMoves.includes(piece.legalMoves[y]))
                 {
-                    if(movesToRemove.includes(piece.legalMoves[y]) == false)   
+                    if(!movesToRemove.includes(piece.legalMoves[y]))   
                         movesToRemove.push(piece.legalMoves[y]);
 
                     
                 }
                 else if(piece.legalMoves[y].piece.defended)
                 {
-                    if(movesToRemove.includes(piece.legalMoves[y]) == false)
+                    if(!movesToRemove.includes(piece.legalMoves[y]))
                         movesToRemove.push(piece.legalMoves[y]);
                 }
             }   
@@ -472,14 +475,14 @@ function kingMovement(piece)
     {
         for(let i = 0; i < piece.axisOfCheck[0].length; i++)
         {
-            if(piece.legalMoves.includes(piece.axisOfCheck[0][i]) && movesToRemove.includes(piece.axisOfCheck[0][i]) == false)
+            if(piece.legalMoves.includes(piece.axisOfCheck[0][i]) && !movesToRemove.includes(piece.axisOfCheck[0][i]))
                 movesToRemove.push(piece.axisOfCheck[0][i]);
         }
         if(piece.axisOfCheck[1].length > 0)
         {
             for(let i = 0; i < piece.axisOfCheck[1].length; i++)
             {
-                if(piece.legalMoves.includes(piece.axisOfCheck[1][i]) && movesToRemove.includes(piece.axisOfCheck[1][i]) == false)
+                if(piece.legalMoves.includes(piece.axisOfCheck[1][i]) && !movesToRemove.includes(piece.axisOfCheck[1][i]))
                     movesToRemove.push(piece.axisOfCheck[1][i]);
             }
         }
