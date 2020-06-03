@@ -30,7 +30,7 @@ const Tile = function(x, y, colour, name){
     this.colour = colour;
 }
 
-const Piece = function(tile, sprite, type, colour)
+const Piece = function(tile, sprite, type, colour, diagonalRange, horizontalRange)
 {
     this.width = 80;
     this.height = 80;
@@ -41,22 +41,27 @@ const Piece = function(tile, sprite, type, colour)
     this.sprite = sprite;
     
     this.legalMoves = [];
+    this.pawnAttack = [];
     this.diagonalRay = [[],[],[],[]];
     this.horizontalRay = [[],[],[],[]];
 
     this.axisOfCheck = [[],[]];
 
     this.defended = false;
+    this.attacker = 'none';
 
     this.x = this.tile.x;
     this.y = this.tile.y;
 
     this.blocked = false; 
     this.hasMoved = false;
-
-    this.kingBox = [];
+    this.defendingCheck = false;
+    
 
     this.king; 
+
+    this.diagonalRange = diagonalRange;
+    this.horizontalRange = horizontalRange;
 }
 
 let mouseObj = new Mouse();
@@ -82,6 +87,15 @@ window.addEventListener('mouseup', function(event){
     mouseObj.mouseDown = false;
 });
 
+window.addEventListener('keyup', function(event)
+{
+    if(event.code ==='ArrowUp')
+    {
+        this.console.log(whiteKing.attacker);
+        this.console.log(blackKing.axisOfCheck);
+    }
+});
+
 //Point and rectangle collision detection
 function mouseCollision(mouse, rect)
 {
@@ -95,11 +109,11 @@ function mouseCollision(mouse, rect)
 //Determines if the mouse is selecting a piece
 function mousePiece(mouse, piece)
 {
-    // if(mouseCollision(mouse, piece) && mouse.mouseDown && turn === piece.colour)
-    //     mouse.pieceHeld = piece; 
-
-    if(mouseCollision(mouse, piece))
+    if(mouseCollision(mouse, piece) && mouse.mouseDown && turn === piece.colour)
         mouse.pieceHeld = piece; 
+
+    // if(mouseCollision(mouse, piece))
+    //     mouse.pieceHeld = piece; 
 }
 
 function piecePosUpdate(piece)
@@ -136,6 +150,11 @@ function piecePosUpdate(piece)
                     turn = 'black';
                 else
                     turn = 'white';
+
+                for(let j = 0; j < pieces.length; j++)
+                {
+                    pieces[j].defended = false;
+                }
             }
         }
     }
@@ -162,36 +181,72 @@ function adjustLegalMovesForPawn(piece)
         }
     }
 
+
+
+
     //Think about changing this to a more general solution for colours ala rook rules
     if(piece.colour === 'white' && tileIndex[0] != 7)
     {
+        piece.pawnAttack = [];
+
         if(!piece.hasMoved)
             piece.legalMoves.push(tiles[tileIndex[0] + 2][tileIndex[1]]);
 
         if(tiles[tileIndex[0] + 1][tileIndex[1]].piece === 'none')
             piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1]]);
 
-        if(tileIndex[1] != 7 && tiles[tileIndex[0] + 1][tileIndex[1] + 1].piece != 'none' && tiles[tileIndex[0] + 1][tileIndex[1] + 1].piece.colour != 'white')
-            piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] + 1]);
+        if(tileIndex[1] != 7)
+        {   
+            if(tiles[tileIndex[0] + 1][tileIndex[1] + 1].piece != 'none' && tiles[tileIndex[0] + 1][tileIndex[1] + 1].piece.colour != 'white')
+                piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] + 1]);
 
+            piece.pawnAttack.push(tiles[tileIndex[0] + 1][tileIndex[1] + 1]);
 
-        if(tileIndex[1] != 0 && tiles[tileIndex[0] + 1][tileIndex[1] - 1].piece != 'none' && tiles[tileIndex[0] + 1][tileIndex[1] - 1].piece.colour != 'white')
-            piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] - 1]);
+        }       
+
+        if(tileIndex[1] != 0)
+        {
+            if(tiles[tileIndex[0] + 1][tileIndex[1] - 1].piece != 'none' && tiles[tileIndex[0] + 1][tileIndex[1] - 1].piece.colour != 'white')
+                piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] - 1]);
+
+            piece.pawnAttack.push(tiles[tileIndex[0] + 1][tileIndex[1] - 1]);
+        }
     }  
     else if(piece.colour === 'black' && tileIndex[0] != 0)
     {
+        piece.pawnAttack = [];
+
         if(!piece.hasMoved)
             piece.legalMoves.push(tiles[tileIndex[0] - 2][tileIndex[1]]);
 
         if(tiles[tileIndex[0] - 1][tileIndex[1]].piece === 'none')
             piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1]]);
 
-        if(tileIndex[1] != 7 && tiles[tileIndex[0] - 1][tileIndex[1] + 1].piece != 'none' && tiles[tileIndex[0] - 1][tileIndex[1] + 1].piece.colour != 'black')
-            piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1] + 1]);
+        if(tileIndex[1] != 7 )
+        {
+            if(tiles[tileIndex[0] - 1][tileIndex[1] + 1].piece != 'none' && tiles[tileIndex[0] - 1][tileIndex[1] + 1].piece.colour != 'black')
+                piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1] + 1]);
+            
+            piece.pawnAttack.push(tiles[tileIndex[0] - 1][tileIndex[1] + 1]);
+        }
 
-        if(tileIndex[1] != 0 && tiles[tileIndex[0] - 1][tileIndex[1] - 1].piece != 'none' && tiles[tileIndex[0] - 1][tileIndex[1] - 1].piece.colour != 'black')
-            piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1] - 1]);
+        if(tileIndex[1] != 0)
+        {
+            if(tiles[tileIndex[0] - 1][tileIndex[1] - 1].piece != 'none' && tiles[tileIndex[0] - 1][tileIndex[1] - 1].piece.colour != 'black')
+                piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1] - 1]);
+
+            piece.pawnAttack.push(tiles[tileIndex[0] - 1][tileIndex[1] - 1]);
+        }
     }  
+
+    for(let i = 0; i < piece.pawnAttack.length; i++)
+    {
+        if(piece.pawnAttack[i].piece.type === 'king' && piece.pawnAttack[i].piece.colour != piece.colour)
+        {
+            piece.pawnAttack[i].piece.axisOfCheck[0] = [piece.pawnAttack[i]];
+            piece.pawnAttack[i].piece.attacker = piece;
+        }
+    }
 }
 
 function horizontalMovement(piece, distance)
@@ -218,7 +273,7 @@ function horizontalMovement(piece, distance)
 
             if(tiles[tileIndex[0] + i][tileIndex[1]].piece != 'none' && !piece.blocked)
             {
-                if(tiles[tileIndex[0] + i][tileIndex[1]].piece.colour == piece.colour)
+                if(tiles[tileIndex[0] + i][tileIndex[1]].piece.colour == piece.colour && i <= distance)
                     tiles[tileIndex[0] + i][tileIndex[1]].piece.defended = true;
 
                 piece.blocked = true;
@@ -235,7 +290,7 @@ function horizontalMovement(piece, distance)
         {
             if(tiles[tileIndex[0] - i][tileIndex[1]].piece.colour != piece.colour && !piece.blocked && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0] - i][tileIndex[1]]);
-            if(tiles[tileIndex[0] - i][tileIndex[1]].piece != 'none' && !piece.blocked)
+            if(tiles[tileIndex[0] - i][tileIndex[1]].piece != 'none' && !piece.blocked && i <= distance)
             {
                 if(tiles[tileIndex[0] - i][tileIndex[1]].piece.colour == piece.colour)
                     tiles[tileIndex[0] - i][tileIndex[1]].piece.defended = true;
@@ -254,8 +309,13 @@ function horizontalMovement(piece, distance)
         {
             if(tiles[tileIndex[0]][tileIndex[1] + i].piece.colour != piece.colour && !piece.blocked && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] + i]);
-            if(tiles[tileIndex[0]][tileIndex[1] + i].piece != 'none')
+            if(tiles[tileIndex[0]][tileIndex[1] + i].piece != 'none' && !piece.blocked && i <= distance)
+            {
+                if(tiles[tileIndex[0]][tileIndex[1] + i].piece.colour == piece.colour)
+                    tiles[tileIndex[0]][tileIndex[1] + i].piece.defended = true;
                 piece.blocked = true;
+            }
+                
 
             piece.horizontalRay[2].push(tiles[tileIndex[0]][tileIndex[1] + i]);
         }
@@ -268,8 +328,14 @@ function horizontalMovement(piece, distance)
         {
             if(tiles[tileIndex[0]][tileIndex[1] - i].piece.colour != piece.colour && !piece.blocked && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] - i]);
-            if(tiles[tileIndex[0]][tileIndex[1] - i].piece != 'none')
+            if(tiles[tileIndex[0]][tileIndex[1] - i].piece != 'none' && !piece.blocked && i <= distance)
+            {
+                if(tiles[tileIndex[0]][tileIndex[1] - i].piece.colour == piece.colour)
+                    tiles[tileIndex[0]][tileIndex[1] - i].piece.defended = true;
+
                 piece.blocked = true;
+            }
+                
 
             piece.horizontalRay[3].push(tiles[tileIndex[0]][tileIndex[1] - i]);
         }
@@ -283,12 +349,14 @@ function horizontalMovement(piece, distance)
             {
                 for(let j = 0; j < piece.horizontalRay[y].length; j++)
                 {
-                    if(piece.horizontalRay[y][j].piece.type === 'king' && piece.type != 'king')
+                    if(piece.horizontalRay[y][j].piece.type === 'king' && piece.type != 'king' && piece.horizontalRay[y][j].piece.colour != piece.colour)
                     {
                         if(piece.horizontalRay[y][j].piece.axisOfCheck[0].length == 0)
                             piece.horizontalRay[y][j].piece.axisOfCheck[0] = piece.horizontalRay[y];
                         else
                             piece.horizontalRay[y][j].piece.axisOfCheck[1] = piece.horizontalRay[y];
+
+                        piece.horizontalRay[y][j].piece.attacker = piece;
                     }    
                 }
             }
@@ -322,8 +390,13 @@ function diagonalMovement(piece, distance)
             if(tiles[tileIndex[0] + i][tileIndex[1] + i].piece.colour != piece.colour && !piece.blocked && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1] + i]);
         
-            if(tiles[tileIndex[0] + i][tileIndex[1] + i].piece != 'none')
-                piece.blocked = true; 
+            if(tiles[tileIndex[0] + i][tileIndex[1] + i].piece != 'none' && !piece.blocked && i <= distance)
+            {
+                if(tiles[tileIndex[0] + i][tileIndex[1] + i].piece.colour == piece.colour)
+                    tiles[tileIndex[0] + i][tileIndex[1] + i].piece.defended = true;
+
+                piece.blocked = true;
+            }
 
             piece.diagonalRay[0].push(tiles[tileIndex[0] + i][tileIndex[1] + i]);
         }
@@ -337,10 +410,16 @@ function diagonalMovement(piece, distance)
             if(tiles[tileIndex[0] + i][tileIndex[1] - i].piece.colour != piece.colour && !piece.blocked && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1] - i]);
             
-            if(tiles[tileIndex[0] + i][tileIndex[1] - i].piece != 'none')
+            if(tiles[tileIndex[0] + i][tileIndex[1] - i].piece != 'none' && !piece.blocked && i <= distance)
+            {
+                if(tiles[tileIndex[0] + i][tileIndex[1] - i].piece.colour == piece.colour)
+                    tiles[tileIndex[0] + i][tileIndex[1] - i].piece.defended = true;
+
                 piece.blocked = true;
+            }
+             
             
-            piece.diagonalRay[0].push(tiles[tileIndex[0] + i][tileIndex[1] - i]);
+            piece.diagonalRay[1].push(tiles[tileIndex[0] + i][tileIndex[1] - i]);
         } 
     }
 
@@ -352,10 +431,14 @@ function diagonalMovement(piece, distance)
             if(tiles[tileIndex[0] - i][tileIndex[1] - i].piece.colour != piece.colour && !piece.blocked && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0] - i][tileIndex[1] - i]);
             
-            if(tiles[tileIndex[0] - i][tileIndex[1] - i].piece != 'none')
-                piece.blocked = true;
+            if(tiles[tileIndex[0] - i][tileIndex[1] - i].piece != 'none' && !piece.blocked && i <= distance)
+            {
+                if(tiles[tileIndex[0] - i][tileIndex[1] - i].piece.colour == piece.colour)
+                    tiles[tileIndex[0] - i][tileIndex[1] - i].piece.defended = true;
 
-            piece.diagonalRay[0].push(tiles[tileIndex[0] - i][tileIndex[1] - i]);
+                piece.blocked = true;
+            }   
+            piece.diagonalRay[2].push(tiles[tileIndex[0] - i][tileIndex[1] - i]);
         }
     }
 
@@ -367,10 +450,15 @@ function diagonalMovement(piece, distance)
             if(tiles[tileIndex[0] - i][tileIndex[1] + i].piece.colour != piece.colour && !piece.blocked && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0] - i][tileIndex[1] + i]);
             
-            if(tiles[tileIndex[0] - i][tileIndex[1] + i].piece != 'none')
-                piece.blocked = true;
+            if(tiles[tileIndex[0] - i][tileIndex[1] + i].piece != 'none' && !piece.blocked && i <= distance)
+            {
+                if(tiles[tileIndex[0] - i][tileIndex[1] + i].piece.colour == piece.colour)
+                    tiles[tileIndex[0] - i][tileIndex[1] + i].piece.defended = true;
 
-            piece.diagonalRay[0].push(tiles[tileIndex[0] - i][tileIndex[1] + i]);        
+                piece.blocked = true;
+            }
+
+            piece.diagonalRay[3].push(tiles[tileIndex[0] - i][tileIndex[1] + i]);        
         }
     }
 
@@ -382,12 +470,15 @@ function diagonalMovement(piece, distance)
             {
                 for(let j = 0; j < piece.diagonalRay[y].length; j++)
                 {
-                    if(piece.diagonalRay[y][j].piece.type === 'king' && piece.type != 'king')
+                    if(piece.diagonalRay[y][j].piece.type === 'king' && piece.type != 'king' && piece.diagonalRay[y][j].piece.colour != piece.colour)
                     {
+
                         if(piece.diagonalRay[y][j].piece.axisOfCheck[0].length == 0)
                             piece.diagonalRay[y][j].piece.axisOfCheck[0] = piece.diagonalRay[y];
                         else
                             piece.diagonalRay[y][j].piece.axisOfCheck[1] = piece.diagonalRay[y];
+
+                        piece.diagonalRay[y][j].piece.attacker = piece;   
                     }    
                 }
             }
@@ -412,34 +503,60 @@ function knightMovement(piece)
     if((tileIndex[0] + 2) < 8 && (tileIndex[1] + 1) < 8)
         if(tiles[tileIndex[0] + 2][tileIndex[1] + 1].piece.colour != piece.colour)
             piece.legalMoves.push(tiles[tileIndex[0] + 2][tileIndex[1] + 1]);
+        else 
+            tiles[tileIndex[0] + 2][tileIndex[1] + 1].piece.defended = true;
 
     if((tileIndex[0] + 2) < 8 && (tileIndex[1] - 1) > -1)
         if(tiles[tileIndex[0] + 2][tileIndex[1] - 1].piece.colour != piece.colour)
             piece.legalMoves.push(tiles[tileIndex[0] + 2][tileIndex[1] - 1]);
+        else 
+            tiles[tileIndex[0] + 2][tileIndex[1] - 1].piece.defended = true;    
+
 
     if((tileIndex[0] + 1) < 8 && (tileIndex[1] + 2) < 8)
         if(tiles[tileIndex[0] + 1][tileIndex[1] + 2].piece.colour != piece.colour)
             piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] + 2]);
+        else 
+            tiles[tileIndex[0] + 1][tileIndex[1] + 2].piece.defended = true;
 
     if((tileIndex[0] + 1) < 8 && (tileIndex[1] - 2) > -1)
         if(tiles[tileIndex[0] + 1][tileIndex[1] - 2].piece.colour != piece.colour)
             piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] - 2]);
+        else    
+            tiles[tileIndex[0] + 1][tileIndex[1] - 2].piece.defended = true;
 
     if((tileIndex[0] - 2) > -1 && (tileIndex[1] - 1) > -1)
         if(tiles[tileIndex[0] - 2][tileIndex[1] - 1].piece.colour != piece.colour)
             piece.legalMoves.push(tiles[tileIndex[0] - 2][tileIndex[1] - 1]);
+        else 
+            tiles[tileIndex[0] - 2][tileIndex[1] - 1].piece.defended = true;    
 
     if((tileIndex[0] - 2) > -1 && (tileIndex[1] + 1) < 8)
         if(tiles[tileIndex[0] - 2][tileIndex[1] + 1].piece.colour != piece.colour)
             piece.legalMoves.push(tiles[tileIndex[0] - 2][tileIndex[1] + 1]);
+        else    
+            tiles[tileIndex[0] - 2][tileIndex[1] + 1].piece.defended = true;
 
     if((tileIndex[0] - 1) > -1 && (tileIndex[1] - 2) > -1)
         if(tiles[tileIndex[0] - 1][tileIndex[1] - 2].piece.colour != piece.colour)
             piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1] - 2]);
+        else 
+            tiles[tileIndex[0] - 1][tileIndex[1] - 2].piece.defended = true;
             
     if((tileIndex[0] - 1) > -1 && (tileIndex[1] + 2) < 8)
         if(tiles[tileIndex[0] - 1][tileIndex[1] + 2].piece.colour != piece.colour)
             piece.legalMoves.push(tiles[tileIndex[0] - 1][tileIndex[1] + 2]);
+        else 
+            tiles[tileIndex[0] - 1][tileIndex[1] + 2].piece.defended = true;
+
+    for(let i = 0; i < piece.legalMoves.length; i++)
+    {
+        if(piece.legalMoves[i].piece.type === 'king')
+        {
+            piece.legalMoves[i].piece.axisOfCheck[0] = [piece.legalMoves[i]];
+            piece.legalMoves[i].piece.attacker = piece;
+        }
+    }
 }
 
 function kingMovement(piece)
@@ -455,14 +572,19 @@ function kingMovement(piece)
         {
             for(let y = 0; y < piece.legalMoves.length; y++)
             {
-                if(pieces[i].legalMoves.includes(piece.legalMoves[y]))
+                if(pieces[i].legalMoves.includes(piece.legalMoves[y]) && pieces[i].type != 'pawn')
                 {
                     if(!movesToRemove.includes(piece.legalMoves[y]))   
                         movesToRemove.push(piece.legalMoves[y]);
-
-                    
                 }
-                else if(piece.legalMoves[y].piece.defended)
+                
+                if(pieces[i].pawnAttack.includes(piece.legalMoves[y]) && pieces[i].type === 'pawn')
+                {
+                    if(!movesToRemove.includes(piece.legalMoves[y]))   
+                        movesToRemove.push(piece.legalMoves[y]);  
+                }
+
+                if(piece.legalMoves[y].piece.defended)
                 {
                     if(!movesToRemove.includes(piece.legalMoves[y]))
                         movesToRemove.push(piece.legalMoves[y]);
@@ -486,6 +608,7 @@ function kingMovement(piece)
                     movesToRemove.push(piece.axisOfCheck[1][i]);
             }
         }
+        
     }
 
 
@@ -494,7 +617,124 @@ function kingMovement(piece)
         piece.legalMoves.splice(piece.legalMoves.indexOf(movesToRemove[i]), 1);
     }
 
-    piece.axisOfCheck = [[],[]];
+    
+
+}
+
+function movesThatBlockCheck(piece)
+{
+    let movesToRemove = [];
+    let axis = [];
+
+    for(let i = 0; i < piece.king.axisOfCheck[0].length; i++)
+    {
+        axis.push(piece.king.axisOfCheck[0][i]);
+    }
+    
+    for(let i = (axis.length - 1); i > 0; i--)
+    {
+        if(axis[i].piece == piece.king)
+            break;
+        
+        axis.pop();
+    }
+
+    if(axis.length > 0)
+    {
+        for(let i = 0; i < piece.legalMoves.length; i++)
+        {
+            if(!axis.includes(piece.legalMoves[i]) && piece.legalMoves[i] != piece.king.attacker.tile)
+                movesToRemove.push(piece.legalMoves[i]);
+        }
+    }
+
+    for(let i = 0; i < movesToRemove.length; i++)
+    {
+        piece.legalMoves.splice(piece.legalMoves.indexOf(movesToRemove[i]), 1);
+    }
+
+    if(piece.king.axisOfCheck[1].length > 0)
+        piece.legalMoves = [];
+}
+
+function checkIfPieceBlocksCheck(piece)
+{   
+    let scanningPiece;
+    let scanningRay;
+
+    for(let i = 0; i < pieces.length; i++)
+    {
+        if(pieces[i].colour != piece.colour) 
+        {
+            if(pieces[i].horizontalRange == 8)
+            {
+                for(let y = 0; y < 4; y++)
+                {
+                    if(pieces[i].horizontalRay[y].includes(piece.king.tile) && pieces[i].horizontalRay[y].includes(piece.tile))
+                    {
+                        for(let j = 0; j < pieces[i].horizontalRay[y].length; j++)
+                        {
+                            if(pieces[i].horizontalRay[y][j].piece.type === 'king') 
+                                break;
+
+                            if(pieces[i].horizontalRay[y][j].piece != 'none' && pieces[i].horizontalRay[y][j].piece != piece)
+                            {
+                                piece.defendingCheck = false;
+                                break;
+                            }
+                            
+                            piece.defendingCheck = true;
+                            scanningPiece = pieces[i];
+                            scanningRay = pieces[i].horizontalRay[y];
+                        }
+                    }
+                }
+            }
+
+            if(pieces[i].diagonalRange == 8)
+            {
+                for(let y = 0; y < 4; y++)
+                {
+                    if(pieces[i].diagonalRay[y].includes(piece.king.tile) && pieces[i].diagonalRay[y].includes(piece.tile))
+                    {
+                        for(let j = 0; j < pieces[i].diagonalRay[y].length; j++)
+                        {
+                            if(pieces[i].diagonalRay[y][j].piece.type === 'king') 
+                                break;
+
+                            if(pieces[i].diagonalRay[y][j].piece != 'none' && pieces[i].diagonalRay[y][j].piece != piece)
+                            {
+                                piece.defendingCheck = false;
+                                break;
+                            }
+                            
+                            piece.defendingCheck = true;
+                            scanningPiece = pieces[i];
+                            scanningRay = pieces[i].diagonalRay[y];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    let movesToRemove = [];
+    if(piece.defendingCheck)
+    {
+
+        
+        for(let i = 0; i < piece.legalMoves.length; i++)
+        {
+            if(!scanningRay.includes(piece.legalMoves[i]) && piece.legalMoves[i] != scanningPiece.tile)
+                movesToRemove.push(piece.legalMoves[i]);
+            
+        }
+    }
+
+    for(let i = 0; i < movesToRemove.length; i++)
+    {
+        piece.legalMoves.splice(piece.legalMoves.indexOf(movesToRemove[i]), 1);
+    }
 }
 
 
@@ -536,41 +776,41 @@ for(let i = 0; i < 8; i++)
     y-=80;
 }
 
-
 // Add all the starting pieces
 for(let i = 0; i < 8; i++)
 {
-    pieces.push(new Piece(tiles[1][i], sprites[5], 'pawn', 'white'));
+    pieces.push(new Piece(tiles[1][i], sprites[5], 'pawn', 'white', 0, 0));
 
-    pieces.push(new Piece(tiles[6][i], sprites[11], 'pawn', 'black'));
+    pieces.push(new Piece(tiles[6][i], sprites[11], 'pawn', 'black', 0, 0));
 }
 
-pieces.push(new Piece(tiles[0][0], sprites[4], 'rook', 'white'));
-pieces.push(new Piece(tiles[0][7], sprites[4], 'rook', 'white'));
+pieces.push(new Piece(tiles[0][0], sprites[4], 'rook', 'white', 0, 8));
+pieces.push(new Piece(tiles[0][7], sprites[4], 'rook', 'white', 0, 8));
 
-pieces.push(new Piece(tiles[7][0], sprites[10], 'rook', 'black'));
-pieces.push(new Piece(tiles[7][7], sprites[10], 'rook', 'black'));
+pieces.push(new Piece(tiles[7][0], sprites[10], 'rook', 'black', 0, 8));
+pieces.push(new Piece(tiles[7][7], sprites[10], 'rook', 'black', 0, 8));
 
-pieces.push(new Piece(tiles[0][1], sprites[3], 'knight', 'white'));
-pieces.push(new Piece(tiles[0][6], sprites[3], 'knight', 'white'));
+pieces.push(new Piece(tiles[0][1], sprites[3], 'knight', 'white', 0, 0));
+pieces.push(new Piece(tiles[0][6], sprites[3], 'knight', 'white', 0, 0));
 
-pieces.push(new Piece(tiles[7][1], sprites[9], 'knight', 'black'));
-pieces.push(new Piece(tiles[7][6], sprites[9], 'knight', 'black'));
+pieces.push(new Piece(tiles[7][1], sprites[9], 'knight', 'black', 0, 0));
+pieces.push(new Piece(tiles[7][6], sprites[9], 'knight', 'black', 0, 0));
 
-pieces.push(new Piece(tiles[0][2], sprites[2], 'bishop', 'white'));
-pieces.push(new Piece(tiles[0][5], sprites[2], 'bishop', 'white'));
+pieces.push(new Piece(tiles[0][2], sprites[2], 'bishop', 'white', 8, 0));
+pieces.push(new Piece(tiles[0][5], sprites[2], 'bishop', 'white', 8, 0));
 
-pieces.push(new Piece(tiles[7][2], sprites[8], 'bishop', 'black'));
-pieces.push(new Piece(tiles[7][5], sprites[8], 'bishop', 'black'));
+pieces.push(new Piece(tiles[7][2], sprites[8], 'bishop', 'black', 8, 0));
+pieces.push(new Piece(tiles[7][5], sprites[8], 'bishop', 'black', 8, 0));
 
-pieces.push(new Piece(tiles[0][3], sprites[1], 'queen', 'white'));
-pieces.push(new Piece(tiles[7][3], sprites[7], 'queen', 'black'));
+pieces.push(new Piece(tiles[0][3], sprites[1], 'queen', 'white', 8, 8));
+pieces.push(new Piece(tiles[7][3], sprites[7], 'queen', 'black', 8, 8));
 
-let whiteKing = new Piece(tiles[0][4], sprites[0], 'king', 'white')
-let blackKing = new Piece(tiles[7][4], sprites[6], 'king', 'black')
+let whiteKing = new Piece(tiles[0][4], sprites[0], 'king', 'white', 1, 1);
+let blackKing = new Piece(tiles[7][4], sprites[6], 'king', 'black', 1, 1);
 
 pieces.push(whiteKing);
 pieces.push(blackKing);
+
 
 
 //Links the Tile object's interal "piece" variable to the piece assigned to the tile
@@ -638,36 +878,78 @@ function loop()
 
         // pieces[i].inCheck = false;
         let piecesToRemove = [];
-        pieces[i].defended = false;
+        pieces[i].defendingCheck = false;
         pieces[i].legalMoves = [];
         pieces[i].diagonalRay = [[],[],[],[]];
         pieces[i].horizontalRay = [[],[],[],[]];
+        
+        
 
         if(pieces[i].type === 'pawn')
+        {
             adjustLegalMovesForPawn(pieces[i]);
+            movesThatBlockCheck(pieces[i]);
+            checkIfPieceBlocksCheck(pieces[i]);
+        }
+        
         if(pieces[i].type === 'rook')
+        {
             horizontalMovement(pieces[i], 8);
-        else if(pieces[i].type === 'bishop')
+            movesThatBlockCheck(pieces[i]);
+            checkIfPieceBlocksCheck(pieces[i]);
+        }
+        
+        if(pieces[i].type === 'bishop')
+        {
             diagonalMovement(pieces[i], 8);
-        else if(pieces[i].type === 'knight')
+            movesThatBlockCheck(pieces[i]);
+            checkIfPieceBlocksCheck(pieces[i]);
+        }
+        
+        if(pieces[i].type === 'knight')
         {
             knightMovement(pieces[i]);
+            movesThatBlockCheck(pieces[i]);
+            checkIfPieceBlocksCheck(pieces[i]);
         }
-        else if(pieces[i].type === 'queen')
+        
+        if(pieces[i].type === 'queen')
         {
             horizontalMovement(pieces[i], 8);
             diagonalMovement(pieces[i], 8);
+            movesThatBlockCheck(pieces[i]);
+            checkIfPieceBlocksCheck(pieces[i]);
         }
-        else if(pieces[i].type === 'king')
+        
+        if(pieces[i].type === 'king')
         {
-            kingMovement(pieces[i]);
+            if(pieces[i].colour === turn)
+            {
+                if(turn === 'white')
+                {
+                    kingMovement(blackKing);
+                    kingMovement(whiteKing);
+                }
+                else 
+                {
+                    kingMovement(whiteKing);
+                    kingMovement(blackKing);
+                }
+            }
         }
+
 
 
         //If the mouse is holding the currently indexed piece, update its position 
         if(mouseObj.pieceHeld == pieces[i])
         {
             piecePosUpdate(pieces[i]);
+
+
+            whiteKing.axisOfCheck = [[],[]];
+            blackKing.axisOfCheck = [[],[]];
+            whiteKing.attacker = 'none';
+            blackKing.attacker = 'none';
         }    
 
         //Remove any pieces that are not assigned to tiles 
