@@ -850,18 +850,6 @@ function loop()
             c.fillStyle = 'black';
             c.font = '10px Arial';
             c.fillText(tiles[i][y].name, tiles[i][y].x + 2, tiles[i][y].y + 78, 50);
-
-            //Draws a circle on each tile that a held piece can move to
-            if(mouseObj.pieceHeld != 'none' && mouseObj.pieceHeld.legalMoves.includes(tiles[i][y]))
-            {
-                c.beginPath();
-                c.strokeStyle = 'rgba(0, 100, 100, 0.4)';
-                c.arc(tiles[i][y].x + 40, tiles[i][y].y + 40, 10, 0, 2 * Math.PI);
-                c.stroke();
-
-                c.fillStyle = 'rgba(0, 100, 100, 0.4)';
-                c.fill();
-            }
         }
     }
     
@@ -959,13 +947,38 @@ function loop()
                 piecesToRemove.push(pieces[i]);
         }
 
-        c.drawImage(pieces[i].sprite, pieces[i].x, pieces[i].y, 80, 80);
+        if(pieces[i] != mouseObj.pieceHeld)
+            c.drawImage(pieces[i].sprite, pieces[i].x, pieces[i].y, 80, 80);
 
         for(let i = 0; i < piecesToRemove.length; i++)
         {
             pieces.splice(pieces.indexOf(piecesToRemove[i]), 1);
         }
     }
+
+    if(mouseObj.pieceHeld != 'none')
+    {
+        for(let i = 0; i < 8; i++)
+        {
+            for(let y = 0; y < 8; y++)
+            {
+                //Draws a circle on each tile that a held piece can move to
+                if(mouseObj.pieceHeld != 'none' && mouseObj.pieceHeld.legalMoves.includes(tiles[i][y]))
+                {
+                    c.beginPath();
+                    c.strokeStyle = 'rgb(0, 100, 100)';
+                    c.arc(tiles[i][y].x + 40, tiles[i][y].y + 40, 10, 0, 2 * Math.PI);
+
+
+                    c.fillStyle = 'rgba(0, 100, 100, .7)';
+                    c.fill();
+                }
+            }
+        }
+
+        c.drawImage(mouseObj.pieceHeld.sprite, mouseObj.pieceHeld.x, mouseObj.pieceHeld.y, 80, 80);
+    }
+
 
     window.requestAnimationFrame(loop);
 }
