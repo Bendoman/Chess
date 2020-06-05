@@ -189,7 +189,7 @@ function adjustLegalMovesForPawn(piece)
     {
         piece.pawnAttack = [];
 
-        if(!piece.hasMoved)
+        if(!piece.hasMoved && tiles[tileIndex[0] + 2][tileIndex[1]].piece == 'none')
             piece.legalMoves.push(tiles[tileIndex[0] + 2][tileIndex[1]]);
 
         if(tiles[tileIndex[0] + 1][tileIndex[1]].piece === 'none')
