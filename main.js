@@ -181,9 +181,6 @@ function adjustLegalMovesForPawn(piece)
         }
     }
 
-
-
-
     //Think about changing this to a more general solution for colours ala rook rules
     if(piece.colour === 'white' && tileIndex[0] != 7)
     {
@@ -316,7 +313,6 @@ function horizontalMovement(piece, distance)
                 piece.blocked = true;
             }
                 
-
             piece.horizontalRay[2].push(tiles[tileIndex[0]][tileIndex[1] + i]);
         }
     }
@@ -336,7 +332,6 @@ function horizontalMovement(piece, distance)
                 piece.blocked = true;
             }
                 
-
             piece.horizontalRay[3].push(tiles[tileIndex[0]][tileIndex[1] - i]);
         }
     }
@@ -362,8 +357,6 @@ function horizontalMovement(piece, distance)
             }
         }
     }
-
-
 }
 
 function diagonalMovement(piece, distance)
@@ -608,17 +601,12 @@ function kingMovement(piece)
                     movesToRemove.push(piece.axisOfCheck[1][i]);
             }
         }
-        
     }
-
 
     for(let i = 0; i < movesToRemove.length; i++)
     {
         piece.legalMoves.splice(piece.legalMoves.indexOf(movesToRemove[i]), 1);
     }
-
-    
-
 }
 
 function movesThatBlockCheck(piece)
@@ -721,13 +709,10 @@ function checkIfPieceBlocksCheck(piece)
     let movesToRemove = [];
     if(piece.defendingCheck)
     {
-
-        
         for(let i = 0; i < piece.legalMoves.length; i++)
         {
             if(!scanningRay.includes(piece.legalMoves[i]) && piece.legalMoves[i] != scanningPiece.tile)
-                movesToRemove.push(piece.legalMoves[i]);
-            
+                movesToRemove.push(piece.legalMoves[i]);   
         }
     }
 
@@ -811,8 +796,6 @@ let blackKing = new Piece(tiles[7][4], sprites[6], 'king', 'black', 1, 1);
 pieces.push(whiteKing);
 pieces.push(blackKing);
 
-
-
 //Links the Tile object's interal "piece" variable to the piece assigned to the tile
 for(let i = 0; i < pieces.length; i++)
 {
@@ -822,7 +805,6 @@ for(let i = 0; i < pieces.length; i++)
     else 
         pieces[i].king = blackKing;
 }
-
 
 function loop()
 {   
@@ -839,8 +821,8 @@ function loop()
         for(let y = 0; y < 8; y++)
         {
             //Detect whether the mouse is hovering over the tile and change the colour to indicate it is
-            if(mouseCollision(mouseObj, tiles[i][y]))
-                c.fillStyle = '#ff3333';
+            if (tiles[i][y].piece != 'none' && tiles[i][y].piece.axisOfCheck[0].length > 0)
+                c.fillStyle = 'red';
             else 
                 c.fillStyle = tiles[i][y].colour;
             
@@ -853,10 +835,6 @@ function loop()
         }
     }
     
-    
-
-    
-
     //Draw each piece in the pieces array
     for(let i = 0; i < pieces.length; i++)
     {
@@ -864,14 +842,12 @@ function loop()
         if(mouseObj.pieceHeld == 'none')
             mousePiece(mouseObj, pieces[i]);
 
-        // pieces[i].inCheck = false;
         let piecesToRemove = [];
-        pieces[i].defendingCheck = false;
         pieces[i].legalMoves = [];
         pieces[i].diagonalRay = [[],[],[],[]];
         pieces[i].horizontalRay = [[],[],[],[]];
         
-        
+        pieces[i].defendingCheck = false;
 
         if(pieces[i].type === 'pawn')
         {
@@ -926,18 +902,15 @@ function loop()
             }
         }
 
-
-
         //If the mouse is holding the currently indexed piece, update its position 
         if(mouseObj.pieceHeld == pieces[i])
         {
             piecePosUpdate(pieces[i]);
 
-
-            whiteKing.axisOfCheck = [[],[]];
-            blackKing.axisOfCheck = [[],[]];
             whiteKing.attacker = 'none';
             blackKing.attacker = 'none';
+            whiteKing.axisOfCheck = [[],[]];
+            blackKing.axisOfCheck = [[],[]];
         }    
 
         //Remove any pieces that are not assigned to tiles 
@@ -969,7 +942,6 @@ function loop()
                     c.strokeStyle = 'rgb(0, 100, 100)';
                     c.arc(tiles[i][y].x + 40, tiles[i][y].y + 40, 10, 0, 2 * Math.PI);
 
-
                     c.fillStyle = 'rgba(0, 100, 100, .7)';
                     c.fill();
                 }
@@ -978,7 +950,6 @@ function loop()
 
         c.drawImage(mouseObj.pieceHeld.sprite, mouseObj.pieceHeld.x, mouseObj.pieceHeld.y, 80, 80);
     }
-
 
     window.requestAnimationFrame(loop);
 }
