@@ -9,6 +9,7 @@ const sprites = [];
 const tiles = [[],[],[],[],[],[],[],[]];
 
 let turn = 'white';
+let endGame = false;
 
 const Mouse = function()
 {
@@ -59,6 +60,7 @@ const Piece = function(tile, sprite, type, colour, diagonalRange, horizontalRang
     
 
     this.king; 
+    this.kingBox = [];
 
     this.diagonalRange = diagonalRange;
     this.horizontalRange = horizontalRange;
@@ -89,11 +91,7 @@ window.addEventListener('mouseup', function(event){
 
 window.addEventListener('keyup', function(event)
 {
-    if(event.code ==='ArrowUp')
-    {
-        this.console.log(whiteKing.attacker);
-        this.console.log(blackKing.axisOfCheck);
-    }
+    
 });
 
 //Point and rectangle collision detection
@@ -131,7 +129,9 @@ function piecePosUpdate(piece)
             //If the mouse has moved over a tile with a piece selected (the function does not get called if there is no piece selected), and lets go
             //Also checks if it is a legal move for the piece selected
             if(mouseCollision(mouseObj, tiles[i][y]) && !mouseObj.mouseDown && piece.legalMoves.includes(tiles[i][y]))
-            {
+            {   
+                piece.hasMoved = true; 
+
                 //If there is already a piece on the tile unasign it's tile so that it is ready for deletion
                 tiles[i][y].piece.tile = 'none';
                 
@@ -155,6 +155,7 @@ function piecePosUpdate(piece)
                 {
                     pieces[j].defended = false;
                 }
+                
             }
         }
     }
@@ -264,7 +265,7 @@ function horizontalMovement(piece, distance)
     for(let i = 1; i < 8; i++)
     {   
         if((tileIndex[0] + i) < 8)
-        {
+        {   
             if(tiles[tileIndex[0] + i][tileIndex[1]].piece.colour != piece.colour && !piece.blocked && i <= distance)
                 piece.legalMoves.push(tiles[tileIndex[0] + i][tileIndex[1]]);
 
@@ -275,6 +276,9 @@ function horizontalMovement(piece, distance)
 
                 piece.blocked = true;
             }
+
+            if(piece.type === 'king' && i <= distance)
+                piece.kingBox.push(tiles[tileIndex[0] + i][tileIndex[1]]);
 
             piece.horizontalRay[0].push(tiles[tileIndex[0] + i][tileIndex[1]]);
         }
@@ -294,6 +298,8 @@ function horizontalMovement(piece, distance)
                 
                 piece.blocked = true;
             }    
+            if(piece.type === 'king' && i <= distance)
+                piece.kingBox.push(tiles[tileIndex[0] - i][tileIndex[1]]);
 
             piece.horizontalRay[1].push(tiles[tileIndex[0] - i][tileIndex[1]]);
         }
@@ -312,7 +318,10 @@ function horizontalMovement(piece, distance)
                     tiles[tileIndex[0]][tileIndex[1] + i].piece.defended = true;
                 piece.blocked = true;
             }
-                
+
+            if(piece.type === 'king' && i <= distance)
+                piece.kingBox.push(tiles[tileIndex[0]][tileIndex[1] + i]);
+
             piece.horizontalRay[2].push(tiles[tileIndex[0]][tileIndex[1] + i]);
         }
     }
@@ -331,7 +340,10 @@ function horizontalMovement(piece, distance)
 
                 piece.blocked = true;
             }
-                
+
+            if(piece.type === 'king' && i <= distance)
+                piece.kingBox.push(tiles[tileIndex[0]][tileIndex[1] - i]);
+
             piece.horizontalRay[3].push(tiles[tileIndex[0]][tileIndex[1] - i]);
         }
     }
@@ -348,7 +360,7 @@ function horizontalMovement(piece, distance)
                     {
                         if(piece.horizontalRay[y][j].piece.axisOfCheck[0].length == 0)
                             piece.horizontalRay[y][j].piece.axisOfCheck[0] = piece.horizontalRay[y];
-                        else
+                        else if(piece.horizontalRay[y][j].piece.axisOfCheck[0].length > 0 && piece.horizontalRay[y][j].piece.attacker != piece)
                             piece.horizontalRay[y][j].piece.axisOfCheck[1] = piece.horizontalRay[y];
 
                         piece.horizontalRay[y][j].piece.attacker = piece;
@@ -391,6 +403,9 @@ function diagonalMovement(piece, distance)
                 piece.blocked = true;
             }
 
+            if(piece.type === 'king' && i <= distance)
+                piece.kingBox.push(tiles[tileIndex[0] + i][tileIndex[1] + i]);
+
             piece.diagonalRay[0].push(tiles[tileIndex[0] + i][tileIndex[1] + i]);
         }
     }
@@ -411,7 +426,9 @@ function diagonalMovement(piece, distance)
                 piece.blocked = true;
             }
              
-            
+            if(piece.type === 'king' && i <= distance)
+                piece.kingBox.push(tiles[tileIndex[0] + i][tileIndex[1] - i]);
+
             piece.diagonalRay[1].push(tiles[tileIndex[0] + i][tileIndex[1] - i]);
         } 
     }
@@ -431,6 +448,10 @@ function diagonalMovement(piece, distance)
 
                 piece.blocked = true;
             }   
+
+            if(piece.type === 'king' && i <= distance)
+                piece.kingBox.push(tiles[tileIndex[0] - i][tileIndex[1] - i]);
+
             piece.diagonalRay[2].push(tiles[tileIndex[0] - i][tileIndex[1] - i]);
         }
     }
@@ -451,6 +472,9 @@ function diagonalMovement(piece, distance)
                 piece.blocked = true;
             }
 
+            if(piece.type === 'king' && i <= distance)
+                piece.kingBox.push(tiles[tileIndex[0] - i][tileIndex[1] + i]);
+
             piece.diagonalRay[3].push(tiles[tileIndex[0] - i][tileIndex[1] + i]);        
         }
     }
@@ -468,7 +492,7 @@ function diagonalMovement(piece, distance)
 
                         if(piece.diagonalRay[y][j].piece.axisOfCheck[0].length == 0)
                             piece.diagonalRay[y][j].piece.axisOfCheck[0] = piece.diagonalRay[y];
-                        else
+                        else if(piece.diagonalRay[y][j].piece.axisOfCheck[0].length > 0 && piece.diagonalRay[y][j].piece.attacker != piece)
                             piece.diagonalRay[y][j].piece.axisOfCheck[1] = piece.diagonalRay[y];
 
                         piece.diagonalRay[y][j].piece.attacker = piece;   
@@ -554,6 +578,7 @@ function knightMovement(piece)
 
 function kingMovement(piece)
 {
+    piece.kingBox = [];
     diagonalMovement(piece, 1);
     horizontalMovement(piece, 1);
 
@@ -578,6 +603,12 @@ function kingMovement(piece)
                 }
 
                 if(piece.legalMoves[y].piece.defended)
+                {
+                    if(!movesToRemove.includes(piece.legalMoves[y]))
+                        movesToRemove.push(piece.legalMoves[y]);
+                }
+
+                if(pieces[i].king.kingBox.includes(piece.legalMoves[y]))
                 {
                     if(!movesToRemove.includes(piece.legalMoves[y]))
                         movesToRemove.push(piece.legalMoves[y]);
@@ -813,16 +844,29 @@ function loop()
     //Print an indicator of whose turn it is
     c.font = '20px Arial';
     c.fillStyle = 'red';
-    c.fillText(turn + "'s" + ' turn', 300, 50, 150);
+    if(!endGame)
+        c.fillText(turn + "'s" + ' turn', 300, 50, 150);
+    else 
+    {
+        if(turn === 'black')
+            c.fillText('white wins', 300, 50, 150);
+        else 
+            c.fillText('black wins', 300, 50, 150);
+    }
 
     //Draw each tile in the tiles array
     for(let i = 0; i < 8; i++)
     {
         for(let y = 0; y < 8; y++)
         {
-            //Detect whether the mouse is hovering over the tile and change the colour to indicate it is
+            
             if (tiles[i][y].piece != 'none' && tiles[i][y].piece.axisOfCheck[0].length > 0)
-                c.fillStyle = 'red';
+            {
+                if(endGame)
+                    c.fillStyle = 'red'
+                else 
+                    c.fillStyle = '#ff3300';
+            }
             else 
                 c.fillStyle = tiles[i][y].colour;
             
@@ -903,7 +947,7 @@ function loop()
         }
 
         //If the mouse is holding the currently indexed piece, update its position 
-        if(mouseObj.pieceHeld == pieces[i])
+        if(mouseObj.pieceHeld == pieces[i] && !endGame)
         {
             piecePosUpdate(pieces[i]);
 
@@ -951,6 +995,20 @@ function loop()
         c.drawImage(mouseObj.pieceHeld.sprite, mouseObj.pieceHeld.x, mouseObj.pieceHeld.y, 80, 80);
     }
 
+    for(let i = 0; i < pieces.length; i++)
+    {
+        if(pieces[i].colour === turn)
+        {
+            if(pieces[i].legalMoves.length > 0)
+            {
+                endGame = false;
+                break;
+            }
+
+            endGame = true; 
+        }
+    }
+    
     window.requestAnimationFrame(loop);
 }
 loop();
