@@ -91,7 +91,12 @@ window.addEventListener('mouseup', function(event){
 
 window.addEventListener('keyup', function(event)
 {
-    
+    if(event.keyCode == 38)
+    {
+        console.log(blackKing.axisOfCheck);
+        console.log(whiteKing.axisOfCheck);
+    }
+
 });
 
 //Point and rectangle collision detection
@@ -360,9 +365,23 @@ function horizontalMovement(piece, distance)
                     {
                         if(piece.horizontalRay[y][j].piece.axisOfCheck[0].length == 0)
                             piece.horizontalRay[y][j].piece.axisOfCheck[0] = piece.horizontalRay[y];
-                        else if(piece.horizontalRay[y][j].piece.axisOfCheck[0].length > 0 && piece.horizontalRay[y][j].piece.attacker != piece)
-                            piece.horizontalRay[y][j].piece.axisOfCheck[1] = piece.horizontalRay[y];
+                        else 
+                        {
+                            let arraysEqual = false; 
+                            for(let u = 0; u < piece.horizontalRay[y].length; u++)
+                            {
+                                if(!piece.horizontalRay[y][j].piece.axisOfCheck[0].includes(piece.horizontalRay[y][u]))
+                                {
+                                    arraysEqual = false;
+                                    break;
+                                }
+                                
+                                arraysEqual = true;
+                            }
 
+                            if(!arraysEqual)
+                                piece.horizontalRay[y][j].piece.axisOfCheck[1] = piece.horizontalRay[y];
+                        }
                         piece.horizontalRay[y][j].piece.attacker = piece;
                     }    
                 }
@@ -492,8 +511,22 @@ function diagonalMovement(piece, distance)
 
                         if(piece.diagonalRay[y][j].piece.axisOfCheck[0].length == 0)
                             piece.diagonalRay[y][j].piece.axisOfCheck[0] = piece.diagonalRay[y];
-                        else if(piece.diagonalRay[y][j].piece.axisOfCheck[0].length > 0 && piece.diagonalRay[y][j].piece.attacker != piece)
-                            piece.diagonalRay[y][j].piece.axisOfCheck[1] = piece.diagonalRay[y];
+                        else 
+                        {
+                            let arraysEqual = false; 
+                            for(let u = 0; u < piece.diagonalRay[y].length; u++)
+                            {
+                                if(!piece.diagonalRay[y][j].piece.axisOfCheck[0].includes(piece.diagonalRay[y][u]))
+                                {
+                                    arraysEqual = false;
+                                    break;
+                                }
+                                arraysEqual = true;
+                            }
+
+                            if(!arraysEqual)
+                                piece.diagonalRay[y][j].piece.axisOfCheck[1] = piece.diagonalRay[y];
+                        }
 
                         piece.diagonalRay[y][j].piece.attacker = piece;   
                     }    
@@ -793,24 +826,24 @@ for(let i = 0; i < 8; i++)
 }
 
 // Add all the starting pieces
-for(let i = 0; i < 8; i++)
-{
-    pieces.push(new Piece(tiles[1][i], sprites[5], 'pawn', 'white', 0, 0));
+// for(let i = 0; i < 8; i++)
+// {
+//     pieces.push(new Piece(tiles[1][i], sprites[5], 'pawn', 'white', 0, 0));
 
-    pieces.push(new Piece(tiles[6][i], sprites[11], 'pawn', 'black', 0, 0));
-}
+//     pieces.push(new Piece(tiles[6][i], sprites[11], 'pawn', 'black', 0, 0));
+// }
 
-pieces.push(new Piece(tiles[0][0], sprites[4], 'rook', 'white', 0, 8));
-pieces.push(new Piece(tiles[0][7], sprites[4], 'rook', 'white', 0, 8));
+// pieces.push(new Piece(tiles[0][0], sprites[4], 'rook', 'white', 0, 8));
+// pieces.push(new Piece(tiles[0][7], sprites[4], 'rook', 'white', 0, 8));
 
-pieces.push(new Piece(tiles[7][0], sprites[10], 'rook', 'black', 0, 8));
-pieces.push(new Piece(tiles[7][7], sprites[10], 'rook', 'black', 0, 8));
+// pieces.push(new Piece(tiles[7][0], sprites[10], 'rook', 'black', 0, 8));
+// pieces.push(new Piece(tiles[7][7], sprites[10], 'rook', 'black', 0, 8));
 
-pieces.push(new Piece(tiles[0][1], sprites[3], 'knight', 'white', 0, 0));
-pieces.push(new Piece(tiles[0][6], sprites[3], 'knight', 'white', 0, 0));
+// pieces.push(new Piece(tiles[0][1], sprites[3], 'knight', 'white', 0, 0));
+// pieces.push(new Piece(tiles[0][6], sprites[3], 'knight', 'white', 0, 0));
 
-pieces.push(new Piece(tiles[7][1], sprites[9], 'knight', 'black', 0, 0));
-pieces.push(new Piece(tiles[7][6], sprites[9], 'knight', 'black', 0, 0));
+// pieces.push(new Piece(tiles[7][1], sprites[9], 'knight', 'black', 0, 0));
+// pieces.push(new Piece(tiles[7][6], sprites[9], 'knight', 'black', 0, 0));
 
 pieces.push(new Piece(tiles[0][2], sprites[2], 'bishop', 'white', 8, 0));
 pieces.push(new Piece(tiles[0][5], sprites[2], 'bishop', 'white', 8, 0));
@@ -844,14 +877,15 @@ function loop()
     //Print an indicator of whose turn it is
     c.font = '20px Arial';
     c.fillStyle = 'red';
-    if(!endGame)
-        c.fillText(turn + "'s" + ' turn', 300, 50, 150);
-    else 
+
+    c.fillText(turn + "'s" + ' turn', 300, 50, 150);
+
+    if(endGame) 
     {
         if(turn === 'black')
-            c.fillText('white wins', 300, 50, 150);
+            c.fillText('white wins', 850, 50, 150);
         else 
-            c.fillText('black wins', 300, 50, 150);
+            c.fillText('black wins', 850, 50, 150);
     }
 
     //Draw each tile in the tiles array
