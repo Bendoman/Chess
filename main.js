@@ -87,6 +87,7 @@ window.addEventListener('mousedown', function(event){
 
 window.addEventListener('mouseup', function(event){
     mouseObj.mouseDown = false;
+    mouseObj.rightClick = false;
 });
 
 window.addEventListener('keyup', function(event)
@@ -96,7 +97,11 @@ window.addEventListener('keyup', function(event)
         console.log(blackKing.axisOfCheck);
         console.log(whiteKing.axisOfCheck);
     }
+});
 
+document.addEventListener('contextmenu', function(event)
+{
+    event.preventDefault();
 });
 
 //Point and rectangle collision detection
@@ -160,7 +165,6 @@ function piecePosUpdate(piece)
                 {
                     pieces[j].defended = false;
                 }
-                
             }
         }
     }
@@ -204,7 +208,6 @@ function adjustLegalMovesForPawn(piece)
                 piece.legalMoves.push(tiles[tileIndex[0] + 1][tileIndex[1] + 1]);
 
             piece.pawnAttack.push(tiles[tileIndex[0] + 1][tileIndex[1] + 1]);
-
         }       
 
         if(tileIndex[1] != 0)
@@ -382,6 +385,7 @@ function horizontalMovement(piece, distance)
                             if(!arraysEqual)
                                 piece.horizontalRay[y][j].piece.axisOfCheck[1] = piece.horizontalRay[y];
                         }
+
                         piece.horizontalRay[y][j].piece.attacker = piece;
                     }    
                 }
@@ -711,9 +715,9 @@ function movesThatBlockCheck(piece)
 
 function checkIfPieceBlocksCheck(piece)
 {   
-    let scanningPiece;
     let scanningRay;
-
+    let scanningPiece;
+    
     for(let i = 0; i < pieces.length; i++)
     {
         if(pieces[i].colour != piece.colour) 
@@ -786,7 +790,6 @@ function checkIfPieceBlocksCheck(piece)
     }
 }
 
-
 //Push piece images into the sprites array
 for(let i = 0; i < 12; i++)
 {
@@ -797,7 +800,6 @@ for(let i = 0; i < 12; i++)
 
 //Create the board by filling the tiles array with Tile objects
 let letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-
 let x = 300;
 let y = 660; 
 
@@ -826,24 +828,24 @@ for(let i = 0; i < 8; i++)
 }
 
 // Add all the starting pieces
-// for(let i = 0; i < 8; i++)
-// {
-//     pieces.push(new Piece(tiles[1][i], sprites[5], 'pawn', 'white', 0, 0));
+for(let i = 0; i < 8; i++)
+{
+    pieces.push(new Piece(tiles[1][i], sprites[5], 'pawn', 'white', 0, 0));
 
-//     pieces.push(new Piece(tiles[6][i], sprites[11], 'pawn', 'black', 0, 0));
-// }
+    pieces.push(new Piece(tiles[6][i], sprites[11], 'pawn', 'black', 0, 0));
+}
 
-// pieces.push(new Piece(tiles[0][0], sprites[4], 'rook', 'white', 0, 8));
-// pieces.push(new Piece(tiles[0][7], sprites[4], 'rook', 'white', 0, 8));
+pieces.push(new Piece(tiles[0][0], sprites[4], 'rook', 'white', 0, 8));
+pieces.push(new Piece(tiles[0][7], sprites[4], 'rook', 'white', 0, 8));
 
-// pieces.push(new Piece(tiles[7][0], sprites[10], 'rook', 'black', 0, 8));
-// pieces.push(new Piece(tiles[7][7], sprites[10], 'rook', 'black', 0, 8));
+pieces.push(new Piece(tiles[7][0], sprites[10], 'rook', 'black', 0, 8));
+pieces.push(new Piece(tiles[7][7], sprites[10], 'rook', 'black', 0, 8));
 
-// pieces.push(new Piece(tiles[0][1], sprites[3], 'knight', 'white', 0, 0));
-// pieces.push(new Piece(tiles[0][6], sprites[3], 'knight', 'white', 0, 0));
+pieces.push(new Piece(tiles[0][1], sprites[3], 'knight', 'white', 0, 0));
+pieces.push(new Piece(tiles[0][6], sprites[3], 'knight', 'white', 0, 0));
 
-// pieces.push(new Piece(tiles[7][1], sprites[9], 'knight', 'black', 0, 0));
-// pieces.push(new Piece(tiles[7][6], sprites[9], 'knight', 'black', 0, 0));
+pieces.push(new Piece(tiles[7][1], sprites[9], 'knight', 'black', 0, 0));
+pieces.push(new Piece(tiles[7][6], sprites[9], 'knight', 'black', 0, 0));
 
 pieces.push(new Piece(tiles[0][2], sprites[2], 'bishop', 'white', 8, 0));
 pieces.push(new Piece(tiles[0][5], sprites[2], 'bishop', 'white', 8, 0));
