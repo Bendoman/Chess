@@ -16,6 +16,7 @@ const Mouse = function()
     this.x = 0;
     this.y = 0;
     this.mouseDown = false;
+    this.rightClick = false; 
     this.pieceHeld = 'none'; 
 }
 
@@ -83,7 +84,13 @@ window.addEventListener('mousemove', function(event){
 
 window.addEventListener('mousedown', function(event){
     if(event.button == 0)
+    {
         mouseObj.mouseDown = true;
+        mouseObj.rightClick = false; 
+    }
+    if(event.button == 2)
+        mouseObj.rightClick = true;
+
 });
 
 window.addEventListener('mouseup', function(event){
@@ -138,7 +145,7 @@ function piecePosUpdate(piece)
         {
             //If the mouse has moved over a tile with a piece selected (the function does not get called if there is no piece selected), and lets go
             //Also checks if it is a legal move for the piece selected
-            if(mouseCollision(mouseObj, tiles[i][y]) && !mouseObj.mouseDown && piece.legalMoves.includes(tiles[i][y]))
+            if(mouseCollision(mouseObj, tiles[i][y]) && !mouseObj.mouseDown && piece.legalMoves.includes(tiles[i][y]) && !mouseObj.rightClick)
             {   
                 piece.hasMoved = true; 
 
