@@ -82,12 +82,12 @@ window.addEventListener('mousemove', function(event){
 });
 
 window.addEventListener('mousedown', function(event){
-    mouseObj.mouseDown = true;
+    if(event.button == 0)
+        mouseObj.mouseDown = true;
 });
 
 window.addEventListener('mouseup', function(event){
     mouseObj.mouseDown = false;
-    mouseObj.rightClick = false;
 });
 
 window.addEventListener('keyup', function(event)
