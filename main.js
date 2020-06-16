@@ -60,6 +60,7 @@ const Piece = function(tile, sprite, type, colour, diagonalRange, horizontalRang
     this.hasMoved = false;
     this.defendingCheck = false;
     
+    this.castle = [];
 
     this.king; 
     this.kingBox = [];
@@ -91,7 +92,6 @@ window.addEventListener('mousedown', function(event){
     }
     if(event.button == 2)
         mouseObj.rightClick = true;
-
 });
 
 window.addEventListener('mouseup', function(event){
@@ -125,7 +125,7 @@ function mouseCollision(rect)
 //Determines if the mouse is selecting a piece
 function mousePiece(piece)
 {
-    if(mouseCollision(piece) && turn === piece.colour)
+    if(mouseCollision(piece.tile) && turn === piece.colour)
     {
         mouseObj.hovering = true;
 
@@ -149,7 +149,7 @@ function piecePosUpdate(piece)
             //If the mouse has moved over a tile with a piece selected (the function does not get called if there is no piece selected), and lets go
             //Also checks if it is a legal move for the piece selected
             if(mouseCollision(tiles[i][y]) && !mouseObj.mouseDown && piece.legalMoves.includes(tiles[i][y]) && !mouseObj.rightClick)
-            {   
+            {       
                 piece.hasMoved = true; 
 
                 //If there is already a piece on the tile unasign it's tile so that it is ready for deletion
@@ -162,9 +162,6 @@ function piecePosUpdate(piece)
                 piece.tile = tiles[i][y];
                 piece.tile.piece = piece;
 
-                if(!piece.hasMoved)
-                    piece.hasMoved = true;
-
                 //Toggle turns after each move
                 if(turn === 'white')
                     turn = 'black';
@@ -174,6 +171,18 @@ function piecePosUpdate(piece)
                 for(let j = 0; j < pieces.length; j++)
                 {
                     pieces[j].defended = false;
+                }
+
+                if(piece.castle.length > 0)
+                {   
+                   for(let j = 0; j < piece.castle.length; j++)
+                   {
+                       if(piece.castle[j].includes(tiles[i][y]))
+                       {
+                           piece.castle[j][1].tile = piece.castle[j][2];
+                           piece.castle[j][2].piece = piece.castle[j][1];
+                       }
+                   }
                 }
             }
         }
@@ -625,11 +634,59 @@ function knightMovement(piece)
 
 function kingMovement(piece)
 {
+    let tileIndex = [];
+
+    //Finds the index within the tiles array of the tile associated with the piece passed to this function
+    for(let i = 0; i < tiles.length; i++)
+    {
+        for(let y = 0; y < tiles[i].length; y++)
+        {
+            if(tiles[i][y] == piece.tile)
+                tileIndex = [i, y]; 
+        }
+    }
+
     piece.kingBox = [];
     diagonalMovement(piece, 1);
     horizontalMovement(piece, 1);
 
     let movesToRemove = [];
+
+    if(!piece.hasMoved)
+    {
+        for(let j = 2; j <= 3; j++)
+        {
+            let canCastle = true;
+            for(let i = 0; i < piece.horizontalRay[j].length; i++)
+            {
+                for(let y = 0; y < pieces.length; y++)
+                {
+                    if(pieces[y].colour != piece.colour)
+                    {
+                        if(pieces[y].legalMoves.includes(piece.horizontalRay[j][i]) && piece.horizontalRay[j][i].piece === 'none')
+                            canCastle = false;
+                    }
+                }
+
+                if(piece.horizontalRay[j][i].piece.type != 'rook' && piece.horizontalRay[j][i].piece != 'none')
+                    break; 
+
+                if(piece.horizontalRay[j][i].piece.type === 'rook' && !piece.horizontalRay[j][i].piece.hasMoved && canCastle && piece.axisOfCheck[0].length == 0)
+                {
+                    if(j == 2)
+                    {
+                        piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] + 2]);
+                        piece.castle.push([tiles[tileIndex[0]][tileIndex[1] + 2], piece.horizontalRay[j][i].piece, tiles[tileIndex[0]][tileIndex[1] + 1]]);
+                    }    
+                    else 
+                    {
+                        piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] - 2]);
+                        piece.castle.push([tiles[tileIndex[0]][tileIndex[1] - 2], piece.horizontalRay[j][i].piece, tiles[tileIndex[0]][tileIndex[1] - 1]]);
+                    }    
+                }
+            }
+        }
+    }
 
     for(let i = 0; i < pieces.length; i++)
     {
@@ -872,6 +929,8 @@ let blackKing = new Piece(tiles[7][4], sprites[6], 'king', 'black', 1, 1);
 pieces.push(whiteKing);
 pieces.push(blackKing);
 
+
+
 //Links the Tile object's interal "piece" variable to the piece assigned to the tile
 for(let i = 0; i < pieces.length; i++)
 {
@@ -881,6 +940,7 @@ for(let i = 0; i < pieces.length; i++)
     else 
         pieces[i].king = blackKing;
 }
+
 
 function loop()
 {   
@@ -932,12 +992,14 @@ function loop()
 
     //Draw each piece in the pieces array
     for(let i = 0; i < pieces.length; i++)
-    {
+    {   
         //If the mouse is not currently holding a piece, check whether the currently indexed piece can be held by it
         if(mouseObj.pieceHeld == 'none')
             mousePiece(pieces[i]);
-
+    
         let piecesToRemove = [];
+        
+        pieces[i].castle = [];
         pieces[i].legalMoves = [];
         pieces[i].diagonalRay = [[],[],[],[]];
         pieces[i].horizontalRay = [[],[],[],[]];
@@ -950,37 +1012,32 @@ function loop()
             movesThatBlockCheck(pieces[i]);
             checkIfPieceBlocksCheck(pieces[i]);
         }
-        
-        if(pieces[i].type === 'rook')
+        else if(pieces[i].type === 'rook')
         {
             horizontalMovement(pieces[i], 8);
             movesThatBlockCheck(pieces[i]);
             checkIfPieceBlocksCheck(pieces[i]);
         }
-        
-        if(pieces[i].type === 'bishop')
+        else if(pieces[i].type === 'bishop')
         {
             diagonalMovement(pieces[i], 8);
             movesThatBlockCheck(pieces[i]);
             checkIfPieceBlocksCheck(pieces[i]);
         }
-        
-        if(pieces[i].type === 'knight')
+        else if(pieces[i].type === 'knight')
         {
             knightMovement(pieces[i]);
             movesThatBlockCheck(pieces[i]);
             checkIfPieceBlocksCheck(pieces[i]);
         }
-        
-        if(pieces[i].type === 'queen')
+        else if(pieces[i].type === 'queen')
         {
             horizontalMovement(pieces[i], 8);
             diagonalMovement(pieces[i], 8);
             movesThatBlockCheck(pieces[i]);
             checkIfPieceBlocksCheck(pieces[i]);
         }
-        
-        if(pieces[i].type === 'king')
+        else if(pieces[i].type === 'king')
         {
             if(pieces[i].colour === turn)
             {
@@ -1016,7 +1073,7 @@ function loop()
         }
 
         if(pieces[i] != mouseObj.pieceHeld)
-            c.drawImage(pieces[i].sprite, pieces[i].x, pieces[i].y, 80, 80);
+            c.drawImage(pieces[i].sprite, pieces[i].tile.x, pieces[i].tile.y, 80, 80);
 
         for(let i = 0; i < piecesToRemove.length; i++)
         {
