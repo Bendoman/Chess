@@ -15,6 +15,7 @@ const Mouse = function()
 {
     this.x = 0;
     this.y = 0;
+    this.hovering = false; 
     this.mouseDown = false;
     this.rightClick = false; 
     this.pieceHeld = 'none'; 
@@ -112,23 +113,25 @@ document.addEventListener('contextmenu', function(event)
 });
 
 //Point and rectangle collision detection
-function mouseCollision(mouse, rect)
+function mouseCollision(rect)
 {
-    if(mouse.x > rect.x && mouse.x < (rect.x + rect.width)
-    && mouse.y > rect.y && mouse.y < (rect.y + rect.height))
+    if(mouseObj.x > rect.x && mouseObj.x < (rect.x + rect.width)
+    && mouseObj.y > rect.y && mouseObj.y < (rect.y + rect.height))
         return true;
     else 
         return false; 
 }
 
 //Determines if the mouse is selecting a piece
-function mousePiece(mouse, piece)
+function mousePiece(piece)
 {
-    if(mouseCollision(mouse, piece) && mouse.mouseDown && turn === piece.colour)
-        mouse.pieceHeld = piece; 
+    if(mouseCollision(piece) && turn === piece.colour)
+    {
+        mouseObj.hovering = true;
 
-    // if(mouseCollision(mouse, piece))
-    //     mouse.pieceHeld = piece; 
+        if(mouseObj.mouseDown)
+            mouseObj.pieceHeld = piece; 
+    }    
 }
 
 function piecePosUpdate(piece)
@@ -145,7 +148,7 @@ function piecePosUpdate(piece)
         {
             //If the mouse has moved over a tile with a piece selected (the function does not get called if there is no piece selected), and lets go
             //Also checks if it is a legal move for the piece selected
-            if(mouseCollision(mouseObj, tiles[i][y]) && !mouseObj.mouseDown && piece.legalMoves.includes(tiles[i][y]) && !mouseObj.rightClick)
+            if(mouseCollision(tiles[i][y]) && !mouseObj.mouseDown && piece.legalMoves.includes(tiles[i][y]) && !mouseObj.rightClick)
             {   
                 piece.hasMoved = true; 
 
@@ -912,6 +915,9 @@ function loop()
             }
             else 
                 c.fillStyle = tiles[i][y].colour;
+
+            if(mouseObj.pieceHeld != 'none' && mouseCollision(tiles[i][y]))
+                c.fillStyle = '#ac3939';
             
             c.fillRect(tiles[i][y].x, tiles[i][y].y, tiles[i][y].width, tiles[i][y].height);
 
@@ -922,12 +928,14 @@ function loop()
         }
     }
     
+    mouseObj.hovering = false;
+
     //Draw each piece in the pieces array
     for(let i = 0; i < pieces.length; i++)
     {
         //If the mouse is not currently holding a piece, check whether the currently indexed piece can be held by it
         if(mouseObj.pieceHeld == 'none')
-            mousePiece(mouseObj, pieces[i]);
+            mousePiece(pieces[i]);
 
         let piecesToRemove = [];
         pieces[i].legalMoves = [];
@@ -1052,6 +1060,11 @@ function loop()
         }
     }
     
+    if(mouseObj.hovering || mouseObj.pieceHeld != 'none')
+        document.querySelector('canvas').style.cursor = 'pointer';
+    else 
+        document.querySelector('canvas').style.cursor = 'default';
+
     window.requestAnimationFrame(loop);
 }
 loop();
