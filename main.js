@@ -37,10 +37,11 @@ const Tile = function(x, y, colour, name)
 
 const Piece = function(tile, sprite, type, colour, diagonalRange, horizontalRange)
 {
+    this.tile = tile;
+    
     this.width = 80;
     this.height = 80;
 
-    this.tile = tile;
     this.type = type;
     this.colour = colour; 
     this.sprite = sprite;
@@ -104,6 +105,7 @@ window.addEventListener('keyup', function(event)
 {
     if(event.keyCode == 38)
     {
+        console.log(blackKing.axisOfCheck);
         console.log(pieces);
     }
 });
@@ -185,7 +187,12 @@ function piecePosUpdate(piece)
                 for(let u = 0; u < pieces.length; u++)
                 {
                     pieces[u].defended = false;
-                }                
+                }   
+                
+                whiteKing.attacker = 'none';
+                blackKing.attacker = 'none';
+                whiteKing.axisOfCheck = [[],[]];
+                blackKing.axisOfCheck = [[],[]];
             }
         }
     }
@@ -388,25 +395,29 @@ function horizontalMovement(piece, distance)
                     if(piece.horizontalRay[y][j].piece.type === 'king' && piece.type != 'king' && piece.horizontalRay[y][j].piece.colour != piece.colour)
                     {
                         if(piece.horizontalRay[y][j].piece.axisOfCheck[0].length == 0)
+                        {
                             piece.horizontalRay[y][j].piece.axisOfCheck[0] = piece.horizontalRay[y];
+                        }    
                         else 
                         {
                             let arraysEqual = false; 
-                            for(let u = 0; u < piece.horizontalRay[y].length; u++)
-                            {
-                                if(!piece.horizontalRay[y][j].piece.axisOfCheck[0].includes(piece.horizontalRay[y][u]))
-                                {
-                                    arraysEqual = false;
-                                    break;
+                            for(let u = 0; u < piece.horizontalRay[y][j].piece.axisOfCheck[0].length; u++)
+                            {                                
+                               if(!piece.horizontalRay[y].includes(piece.horizontalRay[y][j].piece.axisOfCheck[0][u]))
+                               {
+                                arraysEqual = false;
+                                break;
                                 }
-                                
+
                                 arraysEqual = true;
                             }
 
                             if(!arraysEqual)
                                 piece.horizontalRay[y][j].piece.axisOfCheck[1] = piece.horizontalRay[y];
-                        }
 
+                                console.log(arraysEqual);
+                        }
+                        
                         piece.horizontalRay[y][j].piece.attacker = piece;
                     }    
                 }
@@ -539,13 +550,14 @@ function diagonalMovement(piece, distance)
                         else 
                         {
                             let arraysEqual = false; 
-                            for(let u = 0; u < piece.diagonalRay[y].length; u++)
+                            for(let u = 0; u < piece.diagonalRay[y][j].piece.axisOfCheck[0].length; u++)
                             {
-                                if(!piece.diagonalRay[y][j].piece.axisOfCheck[0].includes(piece.diagonalRay[y][u]))
+                                if(!piece.diagonalRay[y].includes(piece.diagonalRay[y][j].piece.axisOfCheck[0][u]))
                                 {
                                     arraysEqual = false;
                                     break;
                                 }
+
                                 arraysEqual = true;
                             }
 
@@ -903,32 +915,32 @@ for(let i = 0; i < 8; i++)
 }
 
 // Add all the starting pieces
-for(let i = 0; i < 8; i++)
-{
-    pieces.push(new Piece(tiles[1][i], sprites[5], 'pawn', 'white', 0, 0));
+// for(let i = 0; i < 8; i++)
+// {
+//     pieces.push(new Piece(tiles[1][i], sprites[5], 'pawn', 'white', 0, 0));
 
-    pieces.push(new Piece(tiles[6][i], sprites[11], 'pawn', 'black', 0, 0));
-}
+//     pieces.push(new Piece(tiles[6][i], sprites[11], 'pawn', 'black', 0, 0));
+// }
 
-pieces.push(new Piece(tiles[0][0], sprites[4], 'rook', 'white', 0, 8));
+// pieces.push(new Piece(tiles[0][0], sprites[4], 'rook', 'white', 0, 8));
 pieces.push(new Piece(tiles[0][7], sprites[4], 'rook', 'white', 0, 8));
 
-pieces.push(new Piece(tiles[7][0], sprites[10], 'rook', 'black', 0, 8));
-pieces.push(new Piece(tiles[7][7], sprites[10], 'rook', 'black', 0, 8));
+// pieces.push(new Piece(tiles[7][0], sprites[10], 'rook', 'black', 0, 8));
+// pieces.push(new Piece(tiles[7][7], sprites[10], 'rook', 'black', 0, 8));
 
-pieces.push(new Piece(tiles[0][1], sprites[3], 'knight', 'white', 0, 0));
-pieces.push(new Piece(tiles[0][6], sprites[3], 'knight', 'white', 0, 0));
+// pieces.push(new Piece(tiles[0][1], sprites[3], 'knight', 'white', 0, 0));
+// pieces.push(new Piece(tiles[0][6], sprites[3], 'knight', 'white', 0, 0));
 
-pieces.push(new Piece(tiles[7][1], sprites[9], 'knight', 'black', 0, 0));
-pieces.push(new Piece(tiles[7][6], sprites[9], 'knight', 'black', 0, 0));
+// pieces.push(new Piece(tiles[7][1], sprites[9], 'knight', 'black', 0, 0));
+// pieces.push(new Piece(tiles[7][6], sprites[9], 'knight', 'black', 0, 0));
 
-pieces.push(new Piece(tiles[0][2], sprites[2], 'bishop', 'white', 8, 0));
+// pieces.push(new Piece(tiles[0][2], sprites[2], 'bishop', 'white', 8, 0));
 pieces.push(new Piece(tiles[0][5], sprites[2], 'bishop', 'white', 8, 0));
 
-pieces.push(new Piece(tiles[7][2], sprites[8], 'bishop', 'black', 8, 0));
-pieces.push(new Piece(tiles[7][5], sprites[8], 'bishop', 'black', 8, 0));
+// pieces.push(new Piece(tiles[7][2], sprites[8], 'bishop', 'black', 8, 0));
+// pieces.push(new Piece(tiles[7][5], sprites[8], 'bishop', 'black', 8, 0));
 
-pieces.push(new Piece(tiles[0][3], sprites[1], 'queen', 'white', 8, 8));
+// pieces.push(new Piece(tiles[0][3], sprites[1], 'queen', 'white', 8, 8));
 pieces.push(new Piece(tiles[7][3], sprites[7], 'queen', 'black', 8, 8));
 
 let whiteKing = new Piece(tiles[0][4], sprites[0], 'king', 'white', 1, 1);
@@ -1067,11 +1079,6 @@ function loop()
         if(mouseObj.pieceHeld == pieces[i] && !endGame)
         {
             piecePosUpdate(pieces[i]);
-
-            whiteKing.attacker = 'none';
-            blackKing.attacker = 'none';
-            whiteKing.axisOfCheck = [[],[]];
-            blackKing.axisOfCheck = [[],[]];
         }    
 
         //Remove any pieces that are not assigned to tiles 
