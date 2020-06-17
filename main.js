@@ -414,10 +414,8 @@ function horizontalMovement(piece, distance)
 
                             if(!arraysEqual)
                                 piece.horizontalRay[y][j].piece.axisOfCheck[1] = piece.horizontalRay[y];
-
-                                console.log(arraysEqual);
                         }
-                        
+
                         piece.horizontalRay[y][j].piece.attacker = piece;
                     }    
                 }
@@ -429,8 +427,6 @@ function horizontalMovement(piece, distance)
 function diagonalMovement(piece, distance)
 {
     let tileIndex = [];
-
-
     //Finds the index within the tiles array of the tile associated with the piece passed to this function
     for(let i = 0; i < tiles.length; i++)
     {
@@ -915,32 +911,32 @@ for(let i = 0; i < 8; i++)
 }
 
 // Add all the starting pieces
-// for(let i = 0; i < 8; i++)
-// {
-//     pieces.push(new Piece(tiles[1][i], sprites[5], 'pawn', 'white', 0, 0));
+for(let i = 0; i < 8; i++)
+{
+    pieces.push(new Piece(tiles[1][i], sprites[5], 'pawn', 'white', 0, 0));
 
-//     pieces.push(new Piece(tiles[6][i], sprites[11], 'pawn', 'black', 0, 0));
-// }
+    pieces.push(new Piece(tiles[6][i], sprites[11], 'pawn', 'black', 0, 0));
+}
 
-// pieces.push(new Piece(tiles[0][0], sprites[4], 'rook', 'white', 0, 8));
+pieces.push(new Piece(tiles[0][0], sprites[4], 'rook', 'white', 0, 8));
 pieces.push(new Piece(tiles[0][7], sprites[4], 'rook', 'white', 0, 8));
 
-// pieces.push(new Piece(tiles[7][0], sprites[10], 'rook', 'black', 0, 8));
-// pieces.push(new Piece(tiles[7][7], sprites[10], 'rook', 'black', 0, 8));
+pieces.push(new Piece(tiles[7][0], sprites[10], 'rook', 'black', 0, 8));
+pieces.push(new Piece(tiles[7][7], sprites[10], 'rook', 'black', 0, 8));
 
-// pieces.push(new Piece(tiles[0][1], sprites[3], 'knight', 'white', 0, 0));
-// pieces.push(new Piece(tiles[0][6], sprites[3], 'knight', 'white', 0, 0));
+pieces.push(new Piece(tiles[0][1], sprites[3], 'knight', 'white', 0, 0));
+pieces.push(new Piece(tiles[0][6], sprites[3], 'knight', 'white', 0, 0));
 
-// pieces.push(new Piece(tiles[7][1], sprites[9], 'knight', 'black', 0, 0));
-// pieces.push(new Piece(tiles[7][6], sprites[9], 'knight', 'black', 0, 0));
+pieces.push(new Piece(tiles[7][1], sprites[9], 'knight', 'black', 0, 0));
+pieces.push(new Piece(tiles[7][6], sprites[9], 'knight', 'black', 0, 0));
 
-// pieces.push(new Piece(tiles[0][2], sprites[2], 'bishop', 'white', 8, 0));
+pieces.push(new Piece(tiles[0][2], sprites[2], 'bishop', 'white', 8, 0));
 pieces.push(new Piece(tiles[0][5], sprites[2], 'bishop', 'white', 8, 0));
 
-// pieces.push(new Piece(tiles[7][2], sprites[8], 'bishop', 'black', 8, 0));
-// pieces.push(new Piece(tiles[7][5], sprites[8], 'bishop', 'black', 8, 0));
+pieces.push(new Piece(tiles[7][2], sprites[8], 'bishop', 'black', 8, 0));
+pieces.push(new Piece(tiles[7][5], sprites[8], 'bishop', 'black', 8, 0));
 
-// pieces.push(new Piece(tiles[0][3], sprites[1], 'queen', 'white', 8, 8));
+pieces.push(new Piece(tiles[0][3], sprites[1], 'queen', 'white', 8, 8));
 pieces.push(new Piece(tiles[7][3], sprites[7], 'queen', 'black', 8, 8));
 
 let whiteKing = new Piece(tiles[0][4], sprites[0], 'king', 'white', 1, 1);
