@@ -21,14 +21,16 @@ const Mouse = function()
     this.pieceHeld = 'none'; 
 }
 
-const Tile = function(x, y, colour, name){
+const Tile = function(x, y, colour, name)
+{
+    this.name = name;
+
     this.x = x; 
     this.y = y;
 
     this.width = 80;
     this.height = 80;
 
-    this.name = name;
     this.piece = 'none';
     this.colour = colour;
 }
@@ -60,7 +62,7 @@ const Piece = function(tile, sprite, type, colour, diagonalRange, horizontalRang
     this.hasMoved = false;
     this.defendingCheck = false;
     
-    this.castle = [];
+    this.castle = [[],[]];
 
     this.king; 
     this.kingBox = [];
@@ -102,8 +104,7 @@ window.addEventListener('keyup', function(event)
 {
     if(event.keyCode == 38)
     {
-        console.log(blackKing.axisOfCheck);
-        console.log(whiteKing.axisOfCheck);
+        console.log(pieces);
     }
 });
 
@@ -168,22 +169,23 @@ function piecePosUpdate(piece)
                 else
                     turn = 'white';
 
-                for(let j = 0; j < pieces.length; j++)
+                if(piece.castle[0].length > 0)
                 {
-                    pieces[j].defended = false;
+                    for(let j = 0; j < 2; j++)
+                    {
+                        if(piece.castle[j][0] == tiles[i][y])
+                        {
+                            piece.castle[j][1].tile.piece = 'none';
+                            piece.castle[j][1].tile = piece.castle[j][2];
+                            piece.castle[j][2].piece = piece.castle[j][1];
+                        }
+                    }
                 }
 
-                if(piece.castle.length > 0)
-                {   
-                   for(let j = 0; j < piece.castle.length; j++)
-                   {
-                       if(piece.castle[j].includes(tiles[i][y]))
-                       {
-                           piece.castle[j][1].tile = piece.castle[j][2];
-                           piece.castle[j][2].piece = piece.castle[j][1];
-                       }
-                   }
-                }
+                for(let u = 0; u < pieces.length; u++)
+                {
+                    pieces[u].defended = false;
+                }                
             }
         }
     }
@@ -676,13 +678,19 @@ function kingMovement(piece)
                     if(j == 2)
                     {
                         piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] + 2]);
-                        piece.castle.push([tiles[tileIndex[0]][tileIndex[1] + 2], piece.horizontalRay[j][i].piece, tiles[tileIndex[0]][tileIndex[1] + 1]]);
+                        if(piece.castle[0].length == 0)
+                            piece.castle[0] = [tiles[tileIndex[0]][tileIndex[1] + 2], piece.horizontalRay[j][i].piece, tiles[tileIndex[0]][tileIndex[1] + 1]];
+                        else 
+                            piece.castle[1] = [tiles[tileIndex[0]][tileIndex[1] + 2], piece.horizontalRay[j][i].piece, tiles[tileIndex[0]][tileIndex[1] + 1]];
                     }    
                     else 
                     {
                         piece.legalMoves.push(tiles[tileIndex[0]][tileIndex[1] - 2]);
-                        piece.castle.push([tiles[tileIndex[0]][tileIndex[1] - 2], piece.horizontalRay[j][i].piece, tiles[tileIndex[0]][tileIndex[1] - 1]]);
-                    }    
+                        if(piece.castle[0].length == 0)
+                            piece.castle[0] = [tiles[tileIndex[0]][tileIndex[1] - 2], piece.horizontalRay[j][i].piece, tiles[tileIndex[0]][tileIndex[1] - 1]];
+                        else 
+                            piece.castle[1] = [tiles[tileIndex[0]][tileIndex[1] - 2], piece.horizontalRay[j][i].piece, tiles[tileIndex[0]][tileIndex[1] - 1]];
+                    }
                 }
             }
         }
@@ -998,8 +1006,9 @@ function loop()
             mousePiece(pieces[i]);
     
         let piecesToRemove = [];
-        
-        pieces[i].castle = [];
+        pieces[i].tile.piece = pieces[i];
+
+        pieces[i].castle = [[],[]];
         pieces[i].legalMoves = [];
         pieces[i].diagonalRay = [[],[],[],[]];
         pieces[i].horizontalRay = [[],[],[],[]];
