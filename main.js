@@ -68,6 +68,8 @@ const Piece = function(tile, sprite, type, colour, diagonalRange, horizontalRang
     this.king; 
     this.kingBox = [];
 
+    this.enPassent = false; 
+
     this.diagonalRange = diagonalRange;
     this.horizontalRange = horizontalRange;
 }
@@ -121,8 +123,8 @@ function mouseCollision(rect)
     if(mouseObj.x > rect.x && mouseObj.x < (rect.x + rect.width)
     && mouseObj.y > rect.y && mouseObj.y < (rect.y + rect.height))
         return true;
-    else 
-        return false; 
+
+    return false; 
 }
 
 //Determines if the mouse is selecting a piece
@@ -224,7 +226,7 @@ function adjustLegalMovesForPawn(piece)
     {
         piece.pawnAttack = [];
 
-        if(!piece.hasMoved && tiles[tileIndex[0] + 2][tileIndex[1]].piece == 'none')
+        if(!piece.hasMoved && tiles[tileIndex[0] + 1][tileIndex[1]].piece == 'none' && tiles[tileIndex[0] + 2][tileIndex[1]].piece == 'none')
             piece.legalMoves.push(tiles[tileIndex[0] + 2][tileIndex[1]]);
 
         if(tiles[tileIndex[0] + 1][tileIndex[1]].piece === 'none')
